@@ -237,17 +237,13 @@ class RateLimiter:
                 "available_tokens": int(minute_bucket.tokens),
                 "max_tokens": minute_bucket.max_tokens,
                 "refill_rate": minute_bucket.refill_rate,
-                "usage_percent": (
-                    (1 - minute_bucket.tokens / minute_bucket.max_tokens) * 100
-                ),
+                "usage_percent": ((1 - minute_bucket.tokens / minute_bucket.max_tokens) * 100),
             },
             "per_hour": {
                 "available_tokens": int(hour_bucket.tokens),
                 "max_tokens": hour_bucket.max_tokens,
                 "refill_rate": hour_bucket.refill_rate,
-                "usage_percent": (
-                    (1 - hour_bucket.tokens / hour_bucket.max_tokens) * 100
-                ),
+                "usage_percent": ((1 - hour_bucket.tokens / hour_bucket.max_tokens) * 100),
             },
         }
 

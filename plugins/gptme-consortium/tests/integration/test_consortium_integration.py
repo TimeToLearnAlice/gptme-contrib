@@ -5,7 +5,6 @@ They require API keys to be set in environment variables.
 """
 
 import pytest
-
 from gptme_consortium.tools.consortium import ConsortiumResult, query_consortium
 
 
@@ -75,10 +74,7 @@ class TestConsortiumIntegration:
         assert result.synthesis_reasoning
         # Consensus should mention exercise benefits
         consensus_lower = result.consensus.lower()
-        assert any(
-            word in consensus_lower
-            for word in ["health", "exercise", "fitness", "benefit"]
-        )
+        assert any(word in consensus_lower for word in ["health", "exercise", "fitness", "benefit"])
 
     def test_model_diversity_real(self, skip_if_no_api_keys):
         """Verify diverse providers work together."""

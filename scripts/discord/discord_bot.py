@@ -23,10 +23,10 @@ import contextvars
 import logging
 import os
 import re
+from collections.abc import AsyncGenerator
 from copy import copy
 from pathlib import Path
 from typing import (
-    AsyncGenerator,
     Callable,
     Dict,
     Optional,
@@ -34,6 +34,16 @@ from typing import (
     Union,
 )
 
+import discord
+from communication_utils.monitoring.metrics import MetricsCollector
+from communication_utils.state.tracking import (
+    ConversationTracker,
+    MessageState,
+)
+from discord.ext import commands
+
+# Import per-user rate limiting and state management
+from discord.rate_limiting import PerUserRateLimiter
 from dotenv import load_dotenv
 from gptme.chat import Message, step
 from gptme.dirs import get_project_gptme_dir
@@ -48,17 +58,6 @@ from gptme.tools import (
     init_tools,
 )
 from rich.logging import RichHandler
-
-import discord
-from discord.ext import commands
-
-# Import per-user rate limiting and state management
-from discord.rate_limiting import PerUserRateLimiter
-from communication_utils.state.tracking import (
-    ConversationTracker,
-    MessageState,
-)
-from communication_utils.monitoring.metrics import MetricsCollector
 
 os.environ["GPTME_CHECK"] = "false"
 
@@ -233,9 +232,7 @@ async def async_step(
                 hide=True,
             )
             # Insert before last message
-            log = log.replace(
-                messages=log.messages[:-1] + [context_msg] + log.messages[-1:]
-            )
+            log = log.replace(messages=log.messages[:-1] + [context_msg] + log.messages[-1:])
         return log
 
     # Run step in thread pool to avoid blocking
@@ -251,9 +248,7 @@ async def async_step(
     while True:
         try:
             # init tools in async thread with copied context
-            await loop.run_in_executor(
-                None, lambda: ctx.run(init_tools, list(tool_allowlist))
-            )
+            await loop.run_in_executor(None, lambda: ctx.run(init_tools, list(tool_allowlist)))
 
             # debug
             # print("\n---\n".join([f"{msg.role} - {msg.content[:20]}..." for msg in current_log]))
@@ -282,8 +277,7 @@ async def async_step(
                 "",
             )
             has_runnable = any(
-                tooluse.is_runnable
-                for tooluse in ToolUse.iter_from_content(last_content)
+                tooluse.is_runnable for tooluse in ToolUse.iter_from_content(last_content)
             )
             if not has_runnable:
                 # Complete metrics tracking on successful exit
@@ -382,9 +376,7 @@ def get_conversation(channel_id: ChannelID) -> Log:
     return Log(msgs)
 
 
-def check_rate_limit(
-    user_id: int, channel: discord.abc.Messageable
-) -> tuple[bool, float]:
+def check_rate_limit(user_id: int, channel: discord.abc.Messageable) -> tuple[bool, float]:
     """Check if user is rate limited.
 
     Returns:
@@ -508,9 +500,7 @@ async def send_discord_message(
 
     except discord.HTTPException as e:
         logger.error(f"Failed to send message: {e}")
-        await channel.send(
-            "```diff\n- Error: Message too complex. Try a shorter response.\n```"
-        )
+        await channel.send("```diff\n- Error: Message too complex. Try a shorter response.\n```")
 
         # Complete metrics tracking
         op.complete(success=False, error=str(e))
@@ -697,9 +687,7 @@ async def on_guild_join(guild: discord.Guild) -> None:
 
         for perm, name in required_permissions:
             if not getattr(permissions, perm):
-                missing_permissions.append(
-                    f"Missing '{name}' permission in #{channel.name}"
-                )
+                missing_permissions.append(f"Missing '{name}' permission in #{channel.name}")
 
     if missing_permissions:
         logger.warning("Missing permissions in new guild:")
@@ -714,8 +702,7 @@ async def checkperms(ctx: commands.Context) -> None:
     missing_permissions = await check_permissions(bot.user)
     if missing_permissions:
         await ctx.send(
-            "⚠️ Missing permissions:\n"
-            + "\n".join(f"- {p}" for p in missing_permissions)
+            "⚠️ Missing permissions:\n" + "\n".join(f"- {p}" for p in missing_permissions)
         )
     else:
         await ctx.send("✅ All required permissions are properly set!")
@@ -1049,12 +1036,8 @@ def main() -> None:
         if not tools:
             logger.error("No tools loaded in gptme")
             return
-        logger.info(
-            f"Loaded {len(tools)} gptme tools: {', '.join(t.name for t in tools)}"
-        )
-        logger.info(
-            f"Successfully initialized gptme with tools ({', '.join(tool_allowlist)})"
-        )
+        logger.info(f"Loaded {len(tools)} gptme tools: {', '.join(t.name for t in tools)}")
+        logger.info(f"Successfully initialized gptme with tools ({', '.join(tool_allowlist)})")
     except Exception as e:
         logger.error(f"Failed to initialize gptme tools: {e}")
         return

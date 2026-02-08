@@ -294,9 +294,7 @@ class InsightStorage:
 
         return insight_id
 
-    def get_insight(
-        self, insight_id: str, source_agent: str = "raw"
-    ) -> Optional[StoredInsight]:
+    def get_insight(self, insight_id: str, source_agent: str = "raw") -> Optional[StoredInsight]:
         """
         Retrieve insight by ID.
 
@@ -485,9 +483,7 @@ def main():
         if not args.id or not args.new_status:
             print("Error: --id and --new-status required")
             return
-        storage.update_status(
-            args.id, args.agent, args.new_status, reviewer=args.reviewer
-        )
+        storage.update_status(args.id, args.agent, args.new_status, reviewer=args.reviewer)
         print(f"Updated {args.id} to status: {args.new_status}")
 
 

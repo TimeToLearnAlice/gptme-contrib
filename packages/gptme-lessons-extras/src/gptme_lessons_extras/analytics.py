@@ -43,9 +43,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
+import frontmatter
 from rich.console import Console
 from rich.table import Table
-import frontmatter
 
 
 @dataclass
@@ -323,11 +323,7 @@ def generate_report(
     table.add_column("Last Used", style="dim")
 
     for idx, stat in enumerate(sorted_stats[:20], 1):  # Top 20
-        last_used = (
-            stat.last_referenced.strftime("%Y-%m-%d")
-            if stat.last_referenced
-            else "Never"
-        )
+        last_used = stat.last_referenced.strftime("%Y-%m-%d") if stat.last_referenced else "Never"
         table.add_row(
             str(idx),
             stat.title,
@@ -405,9 +401,7 @@ def generate_report(
         # Show keywords with no references
         unused_keywords = {kw for kw, refs in keyword_refs.items() if refs == 0}
         if unused_keywords:
-            console.print(
-                f"\n[yellow]ℹ️  {len(unused_keywords)} keywords never triggered:[/]"
-            )
+            console.print(f"\n[yellow]ℹ️  {len(unused_keywords)} keywords never triggered:[/]")
             for kw in sorted(unused_keywords)[:10]:  # Show first 10
                 console.print(f"  • {kw}")
 
@@ -430,12 +424,8 @@ def generate_report(
 
             f.write("## Summary\n\n")
             f.write(f"- Total lessons: {len(stats)}\n")
-            f.write(
-                f"- Total references: {sum(s.reference_count for s in stats.values())}\n"
-            )
-            f.write(
-                f"- Lessons used: {sum(1 for s in stats.values() if s.reference_count > 0)}\n"
-            )
+            f.write(f"- Total references: {sum(s.reference_count for s in stats.values())}\n")
+            f.write(f"- Lessons used: {sum(1 for s in stats.values() if s.reference_count > 0)}\n")
             f.write(f"- Never used: {len(never_used)}\n\n")
 
             f.write("## Most Used Lessons\n\n")
@@ -444,9 +434,7 @@ def generate_report(
                 f.write(f"- References: {stat.reference_count}\n")
                 f.write(f"- Conversations: {len(stat.conversations)}\n")
                 last_used = (
-                    stat.last_referenced.strftime("%Y-%m-%d")
-                    if stat.last_referenced
-                    else "Never"
+                    stat.last_referenced.strftime("%Y-%m-%d") if stat.last_referenced else "Never"
                 )
                 f.write(f"- Last used: {last_used}\n\n")
 

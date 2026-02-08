@@ -83,9 +83,7 @@ def validate_lesson(path: Path) -> list[str]:
         # Validate keywords are non-empty strings
         for i, kw in enumerate(frontmatter["match"]["keywords"]):
             if not isinstance(kw, str):
-                errors.append(
-                    f"Keyword at index {i} must be a string, got {type(kw).__name__}"
-                )
+                errors.append(f"Keyword at index {i} must be a string, got {type(kw).__name__}")
             elif not kw or not kw.strip():
                 errors.append(f"Keyword at index {i} is empty or whitespace-only")
 

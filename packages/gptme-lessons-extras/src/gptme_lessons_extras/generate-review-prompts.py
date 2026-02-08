@@ -29,12 +29,8 @@ class ReviewPromptGenerator:
 
     def __init__(self, workspace_root: Path):
         self.workspace_root = workspace_root
-        self.staleness_report = (
-            workspace_root / "knowledge/meta/lesson-staleness-report.md"
-        )
-        self.analytics_report = (
-            workspace_root / "knowledge/meta/lesson-usage-report.json"
-        )
+        self.staleness_report = workspace_root / "knowledge/meta/lesson-staleness-report.md"
+        self.analytics_report = workspace_root / "knowledge/meta/lesson-usage-report.json"
 
     def parse_staleness_data(self) -> List[LessonInfo]:
         """Parse staleness report to extract lesson info."""
@@ -113,9 +109,7 @@ class ReviewPromptGenerator:
             action.append("Update examples if needed")
 
         # Low/no usage + very stale = archival candidate
-        elif (
-            not lesson.usage_refs or lesson.usage_refs < 10
-        ) and lesson.days_stale > 180:
+        elif (not lesson.usage_refs or lesson.usage_refs < 10) and lesson.days_stale > 180:
             priority = 8
             reason.append(f"minimal usage ({lesson.usage_refs or 0} refs)")
             reason.append(f"very stale ({lesson.days_stale} days)")
@@ -130,11 +124,7 @@ class ReviewPromptGenerator:
             action.append("Update or archive if no longer needed")
 
         # Moderate usage + stale = review
-        elif (
-            lesson.usage_refs
-            and 10 < lesson.usage_refs < 500
-            and lesson.days_stale > 120
-        ):
+        elif lesson.usage_refs and 10 < lesson.usage_refs < 500 and lesson.days_stale > 120:
             priority = 6
             reason.append(f"moderate usage ({lesson.usage_refs} refs)")
             reason.append(f"stale ({lesson.days_stale} days)")
@@ -164,9 +154,7 @@ class ReviewPromptGenerator:
     def format_report(self, prompts: List[Dict]) -> str:
         """Format prompts as markdown report."""
         report = ["# Lesson Review Prompts\n"]
-        report.append(
-            f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}\n"
-        )
+        report.append(f"**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M UTC')}\n")
         report.append(f"**Total prompts**: {len(prompts)}\n")
 
         if not prompts:

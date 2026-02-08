@@ -79,9 +79,7 @@ def _analyze_conversation(conv_dir: Path) -> dict[str, Any]:
     return stats
 
 
-def wrapped_stats(
-    year: int | None = None, logs_dir: Path | None = None
-) -> dict[str, Any]:
+def wrapped_stats(year: int | None = None, logs_dir: Path | None = None) -> dict[str, Any]:
     """
     Get comprehensive statistics for gptme usage.
 
@@ -240,9 +238,7 @@ def wrapped_report(year: int | None = None, logs_dir: Path | None = None) -> str
     # Top models
     if stats["models"]:
         lines.append("🤖 Top Models:")
-        sorted_models = sorted(
-            stats["models"].items(), key=lambda x: x[1]["count"], reverse=True
-        )
+        sorted_models = sorted(stats["models"].items(), key=lambda x: x[1]["count"], reverse=True)
         total_count = sum(m["count"] for m in stats["models"].values())
         for i, (model, data) in enumerate(sorted_models[:5], 1):
             pct = data["count"] / total_count * 100 if total_count > 0 else 0
@@ -283,11 +279,7 @@ def wrapped_report(year: int | None = None, logs_dir: Path | None = None) -> str
     if stats["by_month"]:
         lines.append("📅 Monthly Breakdown:")
         sorted_months = sorted(stats["by_month"].items())
-        max_cost = (
-            max(m["cost"] for m in stats["by_month"].values())
-            if stats["by_month"]
-            else 1
-        )
+        max_cost = max(m["cost"] for m in stats["by_month"].values()) if stats["by_month"] else 1
         for month, data in sorted_months:
             bar_len = int(data["cost"] / max_cost * 20) if max_cost > 0 else 0
             bar = "█" * bar_len

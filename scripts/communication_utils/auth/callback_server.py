@@ -7,7 +7,7 @@ during authorization flows. Supports configurable ports and paths.
 
 import html
 import threading
-from queue import Queue, Empty
+from queue import Empty, Queue
 from typing import Optional
 
 from flask import Flask, request
@@ -92,9 +92,7 @@ class CallbackServer:
             return  # Already running
 
         self.server = make_server("localhost", self.port, self.app, threaded=True)
-        self.server_thread = threading.Thread(
-            target=self.server.serve_forever, daemon=True
-        )
+        self.server_thread = threading.Thread(target=self.server.serve_forever, daemon=True)
         self.server_thread.start()
 
     def stop(self) -> None:

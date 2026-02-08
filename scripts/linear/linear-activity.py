@@ -50,7 +50,6 @@ from typing import Any
 import httpx
 from dotenv import load_dotenv
 
-
 # ============================================================================
 # Custom Exceptions
 # ============================================================================
@@ -270,14 +269,10 @@ def refresh_token() -> None:
             "tokenType": new_tokens.get("token_type", "Bearer"),
             "scope": new_tokens.get("scope", tokens.get("scope")),
             "actorType": "application",
-            "expiresAt": int(
-                (time.time() + new_tokens.get("expires_in", 86400)) * 1000
-            ),
+            "expiresAt": int((time.time() + new_tokens.get("expires_in", 86400)) * 1000),
         }
         TOKENS_FILE.write_text(json.dumps(save_tokens, indent=2))
-        print(
-            f"✓ Token refreshed, expires in {new_tokens.get('expires_in', 0) // 3600}h"
-        )
+        print(f"✓ Token refreshed, expires in {new_tokens.get('expires_in', 0) // 3600}h")
 
     except httpx.HTTPError as e:
         raise TokenExpiredError(f"HTTP error during token refresh: {e}")
@@ -415,11 +410,9 @@ def get_access_token() -> str:
         try:
             tokens = json.loads(TOKENS_FILE.read_text())
             # Support both camelCase and snake_case keys
-            if access_token := (
-                tokens.get("accessToken") or tokens.get("access_token")
-            ):
+            if access_token := (tokens.get("accessToken") or tokens.get("access_token")):
                 return str(access_token)
-        except (json.JSONDecodeError, IOError) as e:
+        except (OSError, json.JSONDecodeError) as e:
             raise AuthenticationError(f"Failed to read tokens file: {e}")
 
     raise AuthenticationError(
@@ -540,9 +533,7 @@ def emit_activity(
     # Content structure depends on activity type
     if activity_type_str == "action":
         if not action_name or not action_param:
-            raise ValidationError(
-                "'action' type requires --action and --parameter flags"
-            )
+            raise ValidationError("'action' type requires --action and --parameter flags")
         content_obj = {
             "type": activity_type_str,
             "action": action_name,
@@ -588,9 +579,7 @@ def emit_activity(
         raise APIError(f"Failed to emit activity: {data}")
 
     activity_id: str = result.get("agentActivity", {}).get("id", "unknown")
-    print(
-        f"✓ Emitted {activity_type_str} to session {session_id} (activity: {activity_id})"
-    )
+    print(f"✓ Emitted {activity_type_str} to session {session_id} (activity: {activity_id})")
     return activity_id
 
 
@@ -751,9 +740,7 @@ def get_states(team_key: str | None = None) -> list[dict[str, Any]]:
         states = data.get("workflowStates", {}).get("nodes", [])
         print("Workflow states:")
 
-    for s in sorted(
-        states, key=lambda x: (x.get("team", {}).get("key", ""), x.get("position", 0))
-    ):
+    for s in sorted(states, key=lambda x: (x.get("team", {}).get("key", ""), x.get("position", 0))):
         team_info = f" [{s['team']['key']}]" if s.get("team") else ""
         print(f"  {s['id']}: {s['name']} ({s['type']}){team_info}")
 
@@ -791,9 +778,7 @@ def get_notifications() -> list[dict[str, Any]]:
     for n in unread[:10]:
         issue = n.get("issue", {})
         if issue:
-            print(
-                f"- [{n['type']}] {issue.get('identifier', 'N/A')}: {issue.get('title', 'N/A')}"
-            )
+            print(f"- [{n['type']}] {issue.get('identifier', 'N/A')}: {issue.get('title', 'N/A')}")
             if n.get("comment"):
                 print(f"  Comment: {n['comment']['body'][:100]}...")
         else:
@@ -895,9 +880,7 @@ def get_user_issues(user: str, include_completed: bool = False) -> list[dict[str
     # Build filter for issues
     state_filter = ""
     if not include_completed:
-        state_filter = (
-            ', filter: { state: { type: { nin: ["completed", "canceled"] } } }'
-        )
+        state_filter = ', filter: { state: { type: { nin: ["completed", "canceled"] } } }'
 
     issues_query = f"""
     query GetUserIssues($userId: String!) {{
@@ -1036,9 +1019,7 @@ def update_issue(
     if state_id:
         print(f"  State: {updated.get('state', {}).get('name', 'unknown')}")
     if assignee_id:
-        print(
-            f"  Assignee: {updated.get('assignee', {}).get('displayName', 'unassigned')}"
-        )
+        print(f"  Assignee: {updated.get('assignee', {}).get('displayName', 'unassigned')}")
 
     return dict(updated) if updated else {}
 
@@ -1104,17 +1085,13 @@ def print_help() -> None:
     print("\nActivity Commands:")
     print("  thought <session_id> <message>      - Emit thinking/progress update")
     print("  action <session_id> <message>       - Emit tool/action invocation")
-    print(
-        "  response <session_id> <message>     - Emit final response (closes session)"
-    )
+    print("  response <session_id> <message>     - Emit final response (closes session)")
     print("  elicitation <session_id> <message>  - Request information from user")
     print("  error <session_id> <message>        - Emit error message")
     print("  prompt <session_id> <message>       - Emit prompt/instruction")
     print("\nFlags (add before message):")
     print("  --ephemeral                         - Activity disappears after next one")
-    print(
-        "  --signal=<signal>                   - Add signal: stop, continue, auth, select"
-    )
+    print("  --signal=<signal>                   - Add signal: stop, continue, auth, select")
     print("\nAPI Commands:")
     print("  get-issue <identifier>              - Get issue details (e.g., SUDO-3)")
     print("  get-comments <identifier>           - Get comments on an issue")
@@ -1123,9 +1100,7 @@ def print_help() -> None:
     print("  update-issue <id> --state=ID        - Update issue state")
     print("  add-comment <identifier> <body>     - Add comment to issue")
     print("  list-users                          - List all users in workspace")
-    print(
-        "  user-issues <user> [--all]          - Get issues assigned to user (name or ID)"
-    )
+    print("  user-issues <user> [--all]          - Get issues assigned to user (name or ID)")
     print("\nToken Commands:")
     print("  auth                                - Initial OAuth authorization")
     print("  refresh                             - Refresh OAuth token")

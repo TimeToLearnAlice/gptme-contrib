@@ -84,8 +84,7 @@ class CuratorAgent:
         self.dry_run = dry_run
         if not dry_run and not HAS_ANTHROPIC:
             raise ImportError(
-                "anthropic package required for non-dry-run mode. "
-                "Install: pip install anthropic"
+                "anthropic package required for non-dry-run mode. " "Install: pip install anthropic"
             )
         self.client = None if dry_run else Anthropic(api_key=self.api_key)
         self.storage = InsightStorage()
@@ -95,9 +94,7 @@ class CuratorAgent:
         (self.delta_dir / "approved").mkdir(exist_ok=True)
         (self.delta_dir / "rejected").mkdir(exist_ok=True)
 
-    def generate_delta(
-        self, insight: StoredInsight, lesson_content: Optional[str] = None
-    ) -> Delta:
+    def generate_delta(self, insight: StoredInsight, lesson_content: Optional[str] = None) -> Delta:
         """
         Generate delta operations from refined insight
 
@@ -184,9 +181,7 @@ class CuratorAgent:
             f"Could not extract valid JSON from response. Response preview: {text[:500]}"
         )
 
-    def _validate_lesson_match(
-        self, insight: StoredInsight, lesson_path: Path
-    ) -> tuple[bool, str]:
+    def _validate_lesson_match(self, insight: StoredInsight, lesson_path: Path) -> tuple[bool, str]:
         """
         Validate if insight content actually matches the lesson's topic
 
@@ -255,9 +250,9 @@ Respond now:"""
             )
 
             response_text = response.content[0].text.strip()
-            is_match = response_text.startswith(
-                "MATCH"
-            ) and not response_text.startswith("NO_MATCH")
+            is_match = response_text.startswith("MATCH") and not response_text.startswith(
+                "NO_MATCH"
+            )
             reasoning = response_text
 
             return is_match, reasoning
@@ -320,9 +315,7 @@ Respond now:"""
 
         raise RuntimeError("Retry loop exhausted without success")
 
-    def _build_curator_prompt(
-        self, insight: StoredInsight, lesson_content: Optional[str]
-    ) -> str:
+    def _build_curator_prompt(self, insight: StoredInsight, lesson_content: Optional[str]) -> str:
         """Build prompt for Claude to generate delta operations"""
         return f"""You are the ACE Curator Agent. Generate delta operations to update a lesson based on this refined insight.
 
@@ -426,9 +419,7 @@ Generate the delta operations now:"""
                     return lesson_file
         return None
 
-    def _determine_lesson_id(
-        self, insight: StoredInsight, lesson_content: Optional[str]
-    ) -> str:
+    def _determine_lesson_id(self, insight: StoredInsight, lesson_content: Optional[str]) -> str:
         """
         Determine lesson_id for delta
 
@@ -455,9 +446,7 @@ Generate the delta operations now:"""
     def _create_rationale(self, insight: StoredInsight) -> str:
         """Create human-readable rationale for delta"""
         evidence_summary = (
-            f"{len(insight.evidence)} sessions"
-            if insight.evidence
-            else "multiple sessions"
+            f"{len(insight.evidence)} sessions" if insight.evidence else "multiple sessions"
         )
         return f"{insight.title} ({insight.pattern_type} pattern, confidence {insight.confidence:.2f}). Evidence: {evidence_summary}. {insight.refinement_notes or ''}"
 
@@ -514,9 +503,7 @@ def cli():
 
 @cli.command()
 @click.option("--insight-id", required=True, help="Insight ID to process")
-@click.option(
-    "--dry-run", is_flag=True, help="Don't call Claude API, use mock operations"
-)
+@click.option("--dry-run", is_flag=True, help="Don't call Claude API, use mock operations")
 def generate(insight_id: str, dry_run: bool):
     """Generate delta operations for single insight"""
     curator = CuratorAgent(dry_run=dry_run)
@@ -552,9 +539,7 @@ def generate(insight_id: str, dry_run: bool):
 
 @cli.command()
 @click.option("--status", default="approved", help="Process insights with this status")
-@click.option(
-    "--dry-run", is_flag=True, help="Don't call Claude API, use mock operations"
-)
+@click.option("--dry-run", is_flag=True, help="Don't call Claude API, use mock operations")
 @click.option("--limit", type=int, help="Maximum insights to process")
 def batch(status: str, dry_run: bool, limit: Optional[int]):
     """Generate deltas for batch of insights"""
@@ -573,9 +558,7 @@ def batch(status: str, dry_run: bool, limit: Optional[int]):
     click.echo(f"Processing {len(insights)} {status} insights...")
 
     for insight_data in insights:
-        insight = curator.storage.get_insight(
-            insight_data["insight_id"], source_agent="refined"
-        )
+        insight = curator.storage.get_insight(insight_data["insight_id"], source_agent="refined")
         if not insight:
             continue
 
@@ -584,9 +567,7 @@ def batch(status: str, dry_run: bool, limit: Optional[int]):
         try:
             delta = curator.generate_delta(insight)
             curator.save_delta(delta)
-            click.echo(
-                f"  ✓ Delta {delta.delta_id}: {len(delta.operations)} operations"
-            )
+            click.echo(f"  ✓ Delta {delta.delta_id}: {len(delta.operations)} operations")
         except Exception as e:
             click.echo(f"  ✗ Error: {e}")
 

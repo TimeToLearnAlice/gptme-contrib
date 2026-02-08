@@ -6,8 +6,7 @@ import tempfile
 from pathlib import Path
 
 import pytest
-
-from gptme_ace.applier import DeltaApplier, ApplierError
+from gptme_ace.applier import ApplierError, DeltaApplier
 from gptme_ace.curator import DeltaOperation
 
 
@@ -206,9 +205,7 @@ class TestDeltaApplier:
         assert "This is new outcome content." in content
 
         # Verify delta was archived
-        assert not (
-            temp_workspace["delta_dir"] / "approved" / "add-delta.json"
-        ).exists()
+        assert not (temp_workspace["delta_dir"] / "approved" / "add-delta.json").exists()
         assert (temp_workspace["delta_dir"] / "applied" / "add-delta.json").exists()
 
     def test_apply_dry_run(self, temp_workspace):
@@ -256,9 +253,7 @@ class TestDeltaApplier:
         assert temp_workspace["lesson_path"].read_text() == original_content
 
         # Verify delta was NOT archived (still in approved)
-        assert (
-            temp_workspace["delta_dir"] / "approved" / "dry-run-delta.json"
-        ).exists()
+        assert (temp_workspace["delta_dir"] / "approved" / "dry-run-delta.json").exists()
 
     def test_list_approved_deltas(self, temp_workspace):
         """Test listing approved deltas"""

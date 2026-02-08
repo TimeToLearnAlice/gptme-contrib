@@ -47,9 +47,7 @@ class SourceMetrics:
         self.poll_attempts += 1
         self.last_poll_time = datetime.now()
         self.total_poll_duration_seconds += duration_seconds
-        self.avg_poll_duration_seconds = (
-            self.total_poll_duration_seconds / self.poll_attempts
-        )
+        self.avg_poll_duration_seconds = self.total_poll_duration_seconds / self.poll_attempts
 
     def record_poll_success(self) -> None:
         """Record a successful poll."""
@@ -115,16 +113,12 @@ class SourceMetrics:
             "tasks_created": self.tasks_created,
             "validation_failures": self.validation_failures,
             "duplicate_requests": self.duplicate_requests,
-            "last_poll_time": self.last_poll_time.isoformat()
-            if self.last_poll_time
-            else None,
+            "last_poll_time": self.last_poll_time.isoformat() if self.last_poll_time else None,
             "last_success_time": self.last_success_time.isoformat()
             if self.last_success_time
             else None,
             "last_error": self.last_error,
-            "last_error_time": self.last_error_time.isoformat()
-            if self.last_error_time
-            else None,
+            "last_error_time": self.last_error_time.isoformat() if self.last_error_time else None,
             "consecutive_failures": self.consecutive_failures,
             "avg_poll_duration_seconds": self.avg_poll_duration_seconds,
             "success_rate": self.success_rate,
@@ -145,9 +139,7 @@ class MetricsCollector:
         self.metrics_dir.mkdir(parents=True, exist_ok=True)
         self.sources: Dict[str, SourceMetrics] = {}
 
-    def get_or_create_metrics(
-        self, source_name: str, source_type: str
-    ) -> SourceMetrics:
+    def get_or_create_metrics(self, source_name: str, source_type: str) -> SourceMetrics:
         """Get or create metrics for a source.
 
         Args:
@@ -163,9 +155,7 @@ class MetricsCollector:
             if metrics_file.exists():
                 metrics = self._load_metrics(metrics_file, source_name, source_type)
             else:
-                metrics = SourceMetrics(
-                    source_name=source_name, source_type=source_type
-                )
+                metrics = SourceMetrics(source_name=source_name, source_type=source_type)
             self.sources[source_name] = metrics
 
         return self.sources[source_name]
@@ -263,18 +253,14 @@ class MetricsCollector:
             "overall_success_rate": (
                 (total_successes / total_polls * 100) if total_polls > 0 else 0.0
             ),
-            "sources": {
-                name: metrics.to_dict() for name, metrics in self.sources.items()
-            },
+            "sources": {name: metrics.to_dict() for name, metrics in self.sources.items()},
         }
 
 
 class HealthChecker:
     """Health check system for input sources."""
 
-    def __init__(
-        self, metrics_collector: MetricsCollector, max_consecutive_failures: int = 3
-    ):
+    def __init__(self, metrics_collector: MetricsCollector, max_consecutive_failures: int = 3):
         """Initialize health checker.
 
         Args:
@@ -328,9 +314,7 @@ class HealthChecker:
             results[source_name] = self.check_source_health(source_name)
 
         # Add summary
-        healthy_count = sum(
-            1 for status in results.values() if status["status"] == "healthy"
-        )
+        healthy_count = sum(1 for status in results.values() if status["status"] == "healthy")
         total_count = len(results)
 
         return {

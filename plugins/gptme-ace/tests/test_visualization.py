@@ -8,14 +8,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from click.testing import CliRunner
-
 from gptme_ace.metrics import CurationRun, InsightQuality, LessonImpact
 from gptme_ace.visualization import (
     _format_datetime,
     _load_deltas,
     cli,
 )
-
 
 # ============================================================================
 # Fixtures
@@ -445,9 +443,7 @@ class TestMetricsRunsCommand:
             "gptme_ace.visualization.get_default_metrics_db",
             return_value=mock_metrics_db,
         ):
-            result = cli_runner.invoke(
-                cli, ["--data-dir", str(temp_dir), "metrics", "runs"]
-            )
+            result = cli_runner.invoke(cli, ["--data-dir", str(temp_dir), "metrics", "runs"])
             assert result.exit_code == 0
             assert "Curation Runs" in result.output
             assert "Total Runs:" in result.output
@@ -457,9 +453,7 @@ class TestMetricsRunsCommand:
             "gptme_ace.visualization.get_default_metrics_db",
             return_value=mock_metrics_db,
         ):
-            result = cli_runner.invoke(
-                cli, ["--data-dir", str(temp_dir), "metrics", "runs", "-j"]
-            )
+            result = cli_runner.invoke(cli, ["--data-dir", str(temp_dir), "metrics", "runs", "-j"])
             assert result.exit_code == 0
             data = json.loads(result.output)
             assert len(data) == 3
@@ -474,9 +468,7 @@ class TestMetricsQualityCommand:
             "gptme_ace.visualization.get_default_metrics_db",
             return_value=mock_metrics_db,
         ):
-            result = cli_runner.invoke(
-                cli, ["--data-dir", str(temp_dir), "metrics", "quality"]
-            )
+            result = cli_runner.invoke(cli, ["--data-dir", str(temp_dir), "metrics", "quality"])
             assert result.exit_code == 0
             assert "Insight Quality" in result.output
             assert "Average Quality:" in result.output
@@ -503,9 +495,7 @@ class TestMetricsImpactCommand:
             "gptme_ace.visualization.get_default_metrics_db",
             return_value=mock_metrics_db,
         ):
-            result = cli_runner.invoke(
-                cli, ["--data-dir", str(temp_dir), "metrics", "impact"]
-            )
+            result = cli_runner.invoke(cli, ["--data-dir", str(temp_dir), "metrics", "impact"])
             assert result.exit_code == 0
             assert "Lesson Impact" in result.output
 
@@ -531,9 +521,7 @@ class TestMetricsTrendsCommand:
             "gptme_ace.visualization.get_default_metrics_db",
             return_value=mock_metrics_db,
         ):
-            result = cli_runner.invoke(
-                cli, ["--data-dir", str(temp_dir), "metrics", "trends"]
-            )
+            result = cli_runner.invoke(cli, ["--data-dir", str(temp_dir), "metrics", "trends"])
             assert result.exit_code == 0
             assert "Trends" in result.output
 

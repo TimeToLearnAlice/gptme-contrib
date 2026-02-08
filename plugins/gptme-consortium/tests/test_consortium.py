@@ -3,11 +3,10 @@
 from unittest.mock import patch
 
 import pytest
-
 from gptme_consortium.tools.consortium import (
     ConsortiumResult,
-    query_consortium,
     _synthesize_consensus,
+    query_consortium,
 )
 
 
@@ -17,12 +16,8 @@ class TestQueryConsortium:
     def test_query_consortium_basic(self):
         """Test basic consortium query with default models."""
         with (
-            patch(
-                "gptme_consortium.tools.consortium._query_single_model"
-            ) as mock_query,
-            patch(
-                "gptme_consortium.tools.consortium._synthesize_consensus"
-            ) as mock_synth,
+            patch("gptme_consortium.tools.consortium._query_single_model") as mock_query,
+            patch("gptme_consortium.tools.consortium._synthesize_consensus") as mock_synth,
         ):
             # Mock individual model responses (5 default models)
             mock_query.side_effect = [
@@ -59,12 +54,8 @@ class TestQueryConsortium:
         custom_models = ["anthropic/claude-sonnet-4-5", "openai/gpt-5.1"]
 
         with (
-            patch(
-                "gptme_consortium.tools.consortium._query_single_model"
-            ) as mock_query,
-            patch(
-                "gptme_consortium.tools.consortium._synthesize_consensus"
-            ) as mock_synth,
+            patch("gptme_consortium.tools.consortium._query_single_model") as mock_query,
+            patch("gptme_consortium.tools.consortium._synthesize_consensus") as mock_synth,
         ):
             mock_query.side_effect = ["Response 1", "Response 2"]
             mock_synth.return_value = {
@@ -86,12 +77,8 @@ class TestQueryConsortium:
         custom_arbiter = "openai/gpt-5.1"
 
         with (
-            patch(
-                "gptme_consortium.tools.consortium._query_single_model"
-            ) as mock_query,
-            patch(
-                "gptme_consortium.tools.consortium._synthesize_consensus"
-            ) as mock_synth,
+            patch("gptme_consortium.tools.consortium._query_single_model") as mock_query,
+            patch("gptme_consortium.tools.consortium._synthesize_consensus") as mock_synth,
         ):
             mock_query.return_value = "Response"
             mock_synth.return_value = {
@@ -110,12 +97,8 @@ class TestQueryConsortium:
     def test_query_consortium_error_handling(self):
         """Test that individual model errors are captured."""
         with (
-            patch(
-                "gptme_consortium.tools.consortium._query_single_model"
-            ) as mock_query,
-            patch(
-                "gptme_consortium.tools.consortium._synthesize_consensus"
-            ) as mock_synth,
+            patch("gptme_consortium.tools.consortium._query_single_model") as mock_query,
+            patch("gptme_consortium.tools.consortium._synthesize_consensus") as mock_synth,
             patch("gptme_consortium.tools.consortium.time.sleep"),
         ):  # Mock sleep for faster tests
             # Account for retries: each error will be retried up to 3 times
@@ -162,10 +145,10 @@ class TestSynthesizeConsensus:
             "model2": "Response 2",
         }
 
-        with patch(
-            "gptme_consortium.tools.consortium._query_single_model"
-        ) as mock_query:
-            mock_query.return_value = '{"consensus": "Final answer", "confidence": 0.9, "reasoning": "Models agree"}'
+        with patch("gptme_consortium.tools.consortium._query_single_model") as mock_query:
+            mock_query.return_value = (
+                '{"consensus": "Final answer", "confidence": 0.9, "reasoning": "Models agree"}'
+            )
 
             result = _synthesize_consensus(
                 question="Test",
@@ -182,9 +165,7 @@ class TestSynthesizeConsensus:
         """Test synthesis fallback for invalid JSON."""
         responses = {"model1": "Response"}
 
-        with patch(
-            "gptme_consortium.tools.consortium._query_single_model"
-        ) as mock_query:
+        with patch("gptme_consortium.tools.consortium._query_single_model") as mock_query:
             mock_query.return_value = "This is not JSON"
 
             result = _synthesize_consensus(
@@ -203,9 +184,7 @@ class TestSynthesizeConsensus:
         """Test synthesis with incomplete JSON."""
         responses = {"model1": "Response"}
 
-        with patch(
-            "gptme_consortium.tools.consortium._query_single_model"
-        ) as mock_query:
+        with patch("gptme_consortium.tools.consortium._query_single_model") as mock_query:
             mock_query.return_value = '{"consensus": "Answer only"}'
 
             result = _synthesize_consensus(
@@ -291,8 +270,5 @@ class TestConsortiumIntegration:
         assert isinstance(result, ConsortiumResult)
         assert result.confidence >= 0.4  # Adjusted for agreement-based confidence
         # Verify we got responses from all models
-        assert (
-            len([r for r in result.responses.values() if not r.startswith("Error:")])
-            >= 2
-        )
+        assert len([r for r in result.responses.values() if not r.startswith("Error:")]) >= 2
         assert len(result.synthesis_reasoning) > 100  # Substantive reasoning

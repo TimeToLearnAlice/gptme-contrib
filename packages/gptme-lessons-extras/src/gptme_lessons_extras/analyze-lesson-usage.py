@@ -14,7 +14,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
-
 # Default agent names to match in log files
 DEFAULT_AGENT_NAMES = ["Assistant", "Bob", "Alice", "Agent"]
 
@@ -45,16 +44,14 @@ def parse_log_file(
     timestamp = datetime.strptime(f"{date_str}{time_str}", "%Y%m%d%H%M%S")
 
     lessons = []
-    with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+    with open(log_path, encoding="utf-8", errors="ignore") as f:
         content = f.read()
 
         # Find all "Auto-included X lessons:" sections
         # Pattern: "Auto-included X lessons:" followed by lesson titles
         # Agent name boundary is configurable (Bob:, Agent:, Assistant:, etc.)
         agent_pattern = "|".join(re.escape(name) + ":" for name in agent_names)
-        pattern = (
-            rf"Auto-included \d+ lessons:\s+((?:.*?\n)+?)(?:Skipped|{agent_pattern}|\[)"
-        )
+        pattern = rf"Auto-included \d+ lessons:\s+((?:.*?\n)+?)(?:Skipped|{agent_pattern}|\[)"
 
         for match in re.finditer(pattern, content, re.MULTILINE):
             lesson_block = match.group(1)
@@ -116,9 +113,7 @@ def analyze_logs(logs_dir: Path, days: Optional[int] = None) -> Dict:
     top_lessons = lesson_counts.most_common(20)
 
     # Calculate inclusion rate per session
-    inclusion_rates = {
-        lesson: count / total_sessions for lesson, count in lesson_counts.items()
-    }
+    inclusion_rates = {lesson: count / total_sessions for lesson, count in lesson_counts.items()}
 
     # Identify potential over-inclusion (>50% of sessions)
     over_included = [
@@ -146,9 +141,7 @@ def analyze_logs(logs_dir: Path, days: Optional[int] = None) -> Dict:
             "total_sessions": total_sessions,
             "total_inclusions": total_inclusions,
             "unique_lessons": unique_lessons,
-            "avg_per_session": total_inclusions / total_sessions
-            if total_sessions > 0
-            else 0,
+            "avg_per_session": total_inclusions / total_sessions if total_sessions > 0 else 0,
         },
         "top_lessons": top_lessons,
         "over_included": over_included,
@@ -195,9 +188,7 @@ def print_report(results: Dict):
     # Timeline
     if results["timeline"]:
         print("\n📈 Timeline (Last 10 Days)")
-        print(
-            f"{'Date':<12} {'Sessions':<10} {'Inclusions':<12} {'Unique':<8} {'Top Lesson'}"
-        )
+        print(f"{'Date':<12} {'Sessions':<10} {'Inclusions':<12} {'Unique':<8} {'Top Lesson'}")
         print("-" * 80)
         for day in results["timeline"][-10:]:
             top_lesson = day["top_3"][0][0] if day["top_3"] else "N/A"
@@ -217,9 +208,7 @@ def save_json_report(results: Dict, output_path: Path):
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Analyze lesson usage from autonomous run logs"
-    )
+    parser = argparse.ArgumentParser(description="Analyze lesson usage from autonomous run logs")
     parser.add_argument(
         "--logs-dir",
         type=Path,
@@ -268,9 +257,7 @@ def main():
                 lesson for lesson, rate in rates.items() if min_rate <= rate < max_rate
             ]
             if lessons_in_range:
-                print(
-                    f"{label:<15} {len(lessons_in_range):<8} {', '.join(lessons_in_range[:3])}"
-                )
+                print(f"{label:<15} {len(lessons_in_range):<8} {', '.join(lessons_in_range[:3])}")
                 if len(lessons_in_range) > 3:
                     print(f"{'':15} {'':8} ... and {len(lessons_in_range) - 3} more")
 

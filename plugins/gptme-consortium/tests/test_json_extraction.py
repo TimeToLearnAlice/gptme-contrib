@@ -22,9 +22,7 @@ class TestJSONExtraction:
 ```
 """
 
-        monkeypatch.setattr(
-            "gptme_consortium.tools.consortium._query_single_model", mock_query
-        )
+        monkeypatch.setattr("gptme_consortium.tools.consortium._query_single_model", mock_query)
 
         result = _synthesize_consensus(
             question="Test", responses=responses, arbiter="test", threshold=0.8
@@ -47,9 +45,7 @@ class TestJSONExtraction:
 }
 """
 
-        monkeypatch.setattr(
-            "gptme_consortium.tools.consortium._query_single_model", mock_query
-        )
+        monkeypatch.setattr("gptme_consortium.tools.consortium._query_single_model", mock_query)
 
         result = _synthesize_consensus(
             question="Test", responses=responses, arbiter="test", threshold=0.8
@@ -67,9 +63,7 @@ class TestJSONExtraction:
 {"consensus": "From text", "confidence": 0.9, "reasoning": "Found in text"}
 This shows high agreement."""
 
-        monkeypatch.setattr(
-            "gptme_consortium.tools.consortium._query_single_model", mock_query
-        )
+        monkeypatch.setattr("gptme_consortium.tools.consortium._query_single_model", mock_query)
 
         result = _synthesize_consensus(
             question="Test", responses=responses, arbiter="test", threshold=0.8
@@ -85,9 +79,7 @@ This shows high agreement."""
         def mock_query(model, prompt):
             raise Exception("API rate limit exceeded")
 
-        monkeypatch.setattr(
-            "gptme_consortium.tools.consortium._query_single_model", mock_query
-        )
+        monkeypatch.setattr("gptme_consortium.tools.consortium._query_single_model", mock_query)
 
         result = _synthesize_consensus(
             question="Test", responses=responses, arbiter="test", threshold=0.8
@@ -104,9 +96,7 @@ This shows high agreement."""
         def mock_query(model, prompt):
             return '{"consensus": "Test", "confidence": "0.95", "reasoning": "Test"}'
 
-        monkeypatch.setattr(
-            "gptme_consortium.tools.consortium._query_single_model", mock_query
-        )
+        monkeypatch.setattr("gptme_consortium.tools.consortium._query_single_model", mock_query)
 
         result = _synthesize_consensus(
             question="Test", responses=responses, arbiter="test", threshold=0.8

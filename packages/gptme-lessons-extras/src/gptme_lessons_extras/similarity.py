@@ -480,9 +480,7 @@ if __name__ == "__main__":
             )
             print(f"  Last modified: {recency_score.days_since_modified} days ago")
             if recency_score.days_since_referenced is not None:
-                print(
-                    f"  Last referenced: {recency_score.days_since_referenced} days ago"
-                )
+                print(f"  Last referenced: {recency_score.days_since_referenced} days ago")
             else:
                 print("  Last referenced: Never")
             print(f"  References: {recency_score.reference_count}")

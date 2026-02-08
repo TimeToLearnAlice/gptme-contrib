@@ -22,7 +22,7 @@ Example in gptme:
 import fileinput
 import sys
 from collections import Counter
-from typing import Iterator
+from collections.abc import Iterator
 
 from rich import print
 from rich.console import Console

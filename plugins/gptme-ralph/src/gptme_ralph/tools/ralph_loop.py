@@ -73,7 +73,7 @@ class Plan:
     current_step: int = 1
 
     @classmethod
-    def from_markdown(cls, content: str) -> "Plan":
+    def from_markdown(cls, content: str) -> Plan:
         """Parse a plan from markdown format."""
         lines = content.strip().split("\n")
 
@@ -625,7 +625,9 @@ Task: {task_description}
 """
 
     output_path.write_text(plan_template)
-    return f"Plan created at: {output_path}\n\nEdit the plan to add specific steps, then run the loop."
+    return (
+        f"Plan created at: {output_path}\n\nEdit the plan to add specific steps, then run the loop."
+    )
 
 
 def create_spec(
@@ -897,17 +899,13 @@ Use the save tool to write the plan. Do not just output it - save it to the file
                 logger.info(f"Plan saved directly to {output_file}")
                 return content
             else:
-                logger.warning(
-                    f"File {output_file} created but doesn't look like a plan"
-                )
+                logger.warning(f"File {output_file} created but doesn't look like a plan")
                 # Clean up invalid file
                 output_file.unlink()
                 return None
 
         # File not created - log details for debugging
-        logger.warning(
-            f"gptme did not create plan file (returncode={result.returncode})"
-        )
+        logger.warning(f"gptme did not create plan file (returncode={result.returncode})")
         if result.stderr:
             logger.debug(f"gptme stderr: {result.stderr[:500]}")
         return None
@@ -1026,8 +1024,7 @@ def _extract_plan_from_output(output: str) -> str | None:
 
         # Generic plan heading (must be h1 with plan-related word)
         if stripped.startswith("# ") and any(
-            word in stripped.lower()
-            for word in ["plan", "steps", "implementation", "tasks"]
+            word in stripped.lower() for word in ["plan", "steps", "implementation", "tasks"]
         ):
             plan_start = i
             break

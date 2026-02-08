@@ -236,9 +236,7 @@ def create_lesson_candidates(
             occurrences=occurrences,
             count=len(occurrences),
             conversations=conversations,
-            suggested_title=suggest_lesson_title(
-                pattern_name, representative.error_text
-            ),
+            suggested_title=suggest_lesson_title(pattern_name, representative.error_text),
             category=suggest_lesson_category(pattern_name),
         )
         candidates.append(candidate)
@@ -336,9 +334,7 @@ def main():
 
     # Group and create candidates
     by_pattern = group_by_pattern(all_occurrences)
-    candidates = create_lesson_candidates(
-        by_pattern, min_occurrences=args.min_occurrences
-    )
+    candidates = create_lesson_candidates(by_pattern, min_occurrences=args.min_occurrences)
 
     print(f"Identified {len(candidates)} potential lesson candidates")
     print("")
@@ -348,9 +344,7 @@ def main():
     output_lines.append("# Lesson Candidates from Pattern Analysis")
     output_lines.append("")
     output_lines.append(f"Generated: {datetime.now().isoformat()}")
-    output_lines.append(
-        f"Analyzed: {len(conversations)} conversations from last {args.days} days"
-    )
+    output_lines.append(f"Analyzed: {len(conversations)} conversations from last {args.days} days")
     output_lines.append(f"Found: {len(all_occurrences)} error occurrences")
     output_lines.append(f"Candidates: {len(candidates)} potential lessons")
     output_lines.append("")

@@ -54,7 +54,7 @@ class HistoryEntry:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "HistoryEntry":
+    def from_dict(cls, data: dict) -> HistoryEntry:
         """Create from dict."""
         return cls(
             timestamp=data["timestamp"],
@@ -271,8 +271,7 @@ def query_coactivation(limit: int = 20) -> list[dict]:
     sorted_pairs = sorted(cooccurrence.items(), key=lambda x: x[1], reverse=True)
 
     return [
-        {"file1": pair[0], "file2": pair[1], "count": count}
-        for pair, count in sorted_pairs[:limit]
+        {"file1": pair[0], "file2": pair[1], "count": count} for pair, count in sorted_pairs[:limit]
     ]
 
 
@@ -455,9 +454,7 @@ def clear_history(older_than_days: int | None = None) -> str:
             if line.strip():
                 try:
                     entry = json.loads(line)
-                    ts = datetime.fromisoformat(
-                        entry["timestamp"].replace("Z", "+00:00")
-                    )
+                    ts = datetime.fromisoformat(entry["timestamp"].replace("Z", "+00:00"))
                     if ts.timestamp() >= cutoff:
                         kept.append(line)
                 except (json.JSONDecodeError, KeyError, ValueError):
@@ -466,9 +463,7 @@ def clear_history(older_than_days: int | None = None) -> str:
     with open(HISTORY_FILE, "w") as f:
         f.writelines(kept)
 
-    return (
-        f"Cleared history older than {older_than_days} days, kept {len(kept)} entries"
-    )
+    return f"Cleared history older than {older_than_days} days, kept {len(kept)} entries"
 
 
 def start_new_session(session_id: str | None = None) -> str:
@@ -482,9 +477,7 @@ def start_new_session(session_id: str | None = None) -> str:
         The new session ID
     """
     global _current_session_id
-    _current_session_id = session_id or datetime.now(timezone.utc).strftime(
-        "%Y%m%d_%H%M%S"
-    )
+    _current_session_id = session_id or datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     return f"Started new session: {_current_session_id}"
 
 

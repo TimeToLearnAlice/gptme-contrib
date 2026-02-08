@@ -68,9 +68,7 @@ def check_naming_conventions(filepath: str) -> List[str]:
         if class_match:
             name = class_match.group(1)
             if not name[0].isupper():
-                issues.append(
-                    f"{filepath}:{i} Class '{name}' should use CapWords convention"
-                )
+                issues.append(f"{filepath}:{i} Class '{name}' should use CapWords convention")
             if "_" in name:
                 issues.append(
                     f"{filepath}:{i} Class '{name}' should not use underscores (use CapWords)"
@@ -125,12 +123,7 @@ def detect_code_smells(filepath: str) -> List[str]:
         # Check for magic numbers
         if stripped and not stripped.startswith("#"):
             # Skip if line is a string literal
-            if (
-                '"""' in line
-                or "'''" in line
-                or (line.count('"') >= 2)
-                or (line.count("'") >= 2)
-            ):
+            if '"""' in line or "'''" in line or (line.count('"') >= 2) or (line.count("'") >= 2):
                 continue
 
             # Find numeric literals except 0, 1, -1
@@ -139,9 +132,7 @@ def detect_code_smells(filepath: str) -> List[str]:
             numbers = re.findall(r"\b([2-9]|[1-9]\d+|\d*\.\d+)\b", stripped)
 
             # Filter out numbers inside string literals (basic check)
-            clean_numbers = [
-                n for n in numbers if f'"{n}"' not in line and f"'{n}'" not in line
-            ]
+            clean_numbers = [n for n in numbers if f'"{n}"' not in line and f"'{n}'" not in line]
             for num in clean_numbers:
                 if "range(" not in stripped and "sleep(" not in stripped:
                     smells.append(
@@ -353,9 +344,7 @@ def check_test_coverage(test_dir: str, source_dir: str) -> List[str]:
         expected_test = f"test_{source_file.name}"
 
         if expected_test not in test_files:
-            issues.append(
-                f"Missing test file for {source_file.name}. Expected: {expected_test}"
-            )
+            issues.append(f"Missing test file for {source_file.name}. Expected: {expected_test}")
         else:
             test_file = test_files[expected_test]
             test_lines = len(test_file.read_text().split("\n"))

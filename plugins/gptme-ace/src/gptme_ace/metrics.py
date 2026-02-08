@@ -265,9 +265,7 @@ class MetricsDB:
                 for row in rows
             ]
 
-    def get_lessons(
-        self, since: Optional[datetime] = None, limit: int = 100
-    ) -> list[LessonImpact]:
+    def get_lessons(self, since: Optional[datetime] = None, limit: int = 100) -> list[LessonImpact]:
         """Get recent lessons"""
         with sqlite3.connect(self.db_path) as conn:
             query = "SELECT * FROM lesson_impact"
@@ -331,9 +329,7 @@ class MetricsCalculator:
             "avg_tokens": sum(r.tokens_used for r in runs) / len(runs),
             "total_insights": total_insights,
             "total_conversions": total_conversions,
-            "conversion_rate": (
-                total_conversions / total_insights if total_insights > 0 else 0.0
-            ),
+            "conversion_rate": (total_conversions / total_insights if total_insights > 0 else 0.0),
         }
 
     def get_insight_quality_summary(self, period: timedelta) -> dict:
@@ -394,10 +390,8 @@ class MetricsCalculator:
             "period_days": period.days,
             "created": len(lessons),
             "avg_uses": sum(lesson.total_uses for lesson in lessons) / len(lessons),
-            "avg_helpful_ratio": sum(helpful_ratio(lesson) for lesson in lessons)
-            / len(lessons),
-            "avg_effectiveness": sum(effectiveness(lesson) for lesson in lessons)
-            / len(lessons),
+            "avg_helpful_ratio": sum(helpful_ratio(lesson) for lesson in lessons) / len(lessons),
+            "avg_effectiveness": sum(effectiveness(lesson) for lesson in lessons) / len(lessons),
         }
 
     def get_system_health(self) -> dict:
@@ -414,27 +408,19 @@ class MetricsCalculator:
 
         if curation["success_rate"] < 0.8:
             health_status = "warning"
-            alerts.append(
-                f"Low success rate: {curation['success_rate']:.1%} (target: 80%)"
-            )
+            alerts.append(f"Low success rate: {curation['success_rate']:.1%} (target: 80%)")
 
         if curation["conversion_rate"] < 0.5:
             health_status = "warning"
-            alerts.append(
-                f"Low conversion rate: {curation['conversion_rate']:.1%} (target: 50%)"
-            )
+            alerts.append(f"Low conversion rate: {curation['conversion_rate']:.1%} (target: 50%)")
 
         if insights["avg_quality"] < 0.6:
             health_status = "warning"
-            alerts.append(
-                f"Low insight quality: {insights['avg_quality']:.2f} (target: 0.6)"
-            )
+            alerts.append(f"Low insight quality: {insights['avg_quality']:.2f} (target: 0.6)")
 
         if lessons["avg_helpful_ratio"] < 0.7:
             health_status = "warning"
-            alerts.append(
-                f"Low helpful ratio: {lessons['avg_helpful_ratio']:.1%} (target: 70%)"
-            )
+            alerts.append(f"Low helpful ratio: {lessons['avg_helpful_ratio']:.1%} (target: 70%)")
 
         return {
             "status": health_status,

@@ -4,14 +4,13 @@ import json
 from pathlib import Path
 
 import pytest
-
 from gptme_ace.reviewer import (
+    DEFAULT_CRITERIA,
     DeltaReviewer,
     ReviewCriterion,
     ReviewDecision,
-    ReviewResult,
-    DEFAULT_CRITERIA,
     ReviewerError,
+    ReviewResult,
 )
 
 
@@ -197,9 +196,7 @@ class TestDeltaReviewer:
         result = reviewer.evaluate_criterion(criterion, sample_delta, None)
         # Sample delta has valid operations
         assert result.score >= 0.6
-        assert (
-            "Operations follow format" in result.feedback or "Valid" in result.feedback
-        )
+        assert "Operations follow format" in result.feedback or "Valid" in result.feedback
 
     def test_review_delta(self, temp_workspace, sample_delta, sample_lesson_content):
         """Test full delta review"""
@@ -287,9 +284,7 @@ class TestDeltaReviewer:
         # Should be auto-approved if score >= 0.3
         if result.overall_score >= 0.3:
             assert result.auto_approved
-            assert (
-                temp_workspace / "deltas" / "approved" / "test-delta-001.json"
-            ).exists()
+            assert (temp_workspace / "deltas" / "approved" / "test-delta-001.json").exists()
 
     def test_batch_review(self, temp_workspace, sample_delta):
         """Test batch review of multiple deltas"""

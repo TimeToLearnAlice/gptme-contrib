@@ -21,7 +21,7 @@ def load_conversation(log_path: Path) -> List[Dict]:
         click.echo(f"Error: Conversation file not found: {conversation_file}", err=True)
         return messages
 
-    with open(conversation_file, "r", encoding="utf-8") as f:
+    with open(conversation_file, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:

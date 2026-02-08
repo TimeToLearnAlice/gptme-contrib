@@ -43,15 +43,11 @@ class SyncError(Exception):
     pass
 
 
-def run_git(
-    args: list[str], cwd: Path, check: bool = True
-) -> subprocess.CompletedProcess:
+def run_git(args: list[str], cwd: Path, check: bool = True) -> subprocess.CompletedProcess:
     """Run git command with error handling."""
     cmd = ["git"] + args
     try:
-        result = subprocess.run(
-            cmd, cwd=cwd, capture_output=True, text=True, check=check
-        )
+        result = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, check=check)
         return result
     except subprocess.CalledProcessError as e:
         raise SyncError(f"Git command failed: {e.stderr}") from e
@@ -138,9 +134,7 @@ def export_to_network(
     return success_count
 
 
-def push_lessons(
-    network_dir: Path = DEFAULT_NETWORK_DIR, message: Optional[str] = None
-) -> bool:
+def push_lessons(network_dir: Path = DEFAULT_NETWORK_DIR, message: Optional[str] = None) -> bool:
     """
     Commit and push changes to network repository.
 
@@ -337,15 +331,11 @@ Examples:
     parser.add_argument(
         "--list", action="store_true", help="List available lessons from other agents"
     )
-    parser.add_argument(
-        "--push-only", action="store_true", help="Only push changes (no pull)"
-    )
+    parser.add_argument("--push-only", action="store_true", help="Only push changes (no pull)")
     parser.add_argument(
         "--pull-only", action="store_true", help="Only pull changes (no export/push)"
     )
-    parser.add_argument(
-        "--force", action="store_true", help="Force re-clone network repo"
-    )
+    parser.add_argument("--force", action="store_true", help="Force re-clone network repo")
 
     args = parser.parse_args()
 

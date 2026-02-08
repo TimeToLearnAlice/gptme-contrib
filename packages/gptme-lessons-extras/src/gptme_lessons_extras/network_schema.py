@@ -139,9 +139,7 @@ def validate_network_metadata(metadata: dict) -> tuple[bool, list[str]]:
             if not 0.0 <= rate <= 1.0:
                 errors.append(f"Success rate must be 0.0-1.0, got {rate}")
         except (TypeError, ValueError):
-            errors.append(
-                f"Success rate must be numeric, got {metadata['success_rate']}"
-            )
+            errors.append(f"Success rate must be numeric, got {metadata['success_rate']}")
 
     if "adoption_count" in metadata:
         try:
@@ -149,9 +147,7 @@ def validate_network_metadata(metadata: dict) -> tuple[bool, list[str]]:
             if count < 0:
                 errors.append(f"Adoption count must be >= 0, got {count}")
         except (TypeError, ValueError):
-            errors.append(
-                f"Adoption count must be integer, got {metadata['adoption_count']}"
-            )
+            errors.append(f"Adoption count must be integer, got {metadata['adoption_count']}")
 
     # Validate timestamps
     for field in ["created", "updated"]:
@@ -159,8 +155,6 @@ def validate_network_metadata(metadata: dict) -> tuple[bool, list[str]]:
             try:
                 datetime.fromisoformat(metadata[field])
             except (TypeError, ValueError):
-                errors.append(
-                    f"{field} must be ISO 8601 timestamp, got {metadata[field]}"
-                )
+                errors.append(f"{field} must be ISO 8601 timestamp, got {metadata[field]}")
 
     return (len(errors) == 0, errors)

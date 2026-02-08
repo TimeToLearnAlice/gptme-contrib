@@ -8,7 +8,6 @@ import time
 from unittest.mock import patch
 
 import pytest
-
 from gptme_consortium.tools.consortium import (
     _synthesize_consensus,
     query_consortium,
@@ -234,9 +233,7 @@ class TestErrorHandling:
         """Test handling of malformed JSON from arbiter."""
         responses = {"m1": "Response 1", "m2": "Response 2"}
 
-        with patch(
-            "gptme_consortium.tools.consortium._query_single_model"
-        ) as mock_query:
+        with patch("gptme_consortium.tools.consortium._query_single_model") as mock_query:
             mock_query.return_value = "Not valid JSON"
 
             result = _synthesize_consensus(
@@ -251,9 +248,7 @@ class TestErrorHandling:
         """Test handling when JSON response missing required fields."""
         responses = {"m1": "Response"}
 
-        with patch(
-            "gptme_consortium.tools.consortium._query_single_model"
-        ) as mock_query:
+        with patch("gptme_consortium.tools.consortium._query_single_model") as mock_query:
             # Missing 'reasoning' field
             mock_query.return_value = '{"consensus": "Answer", "confidence": 0.8}'
 
@@ -320,9 +315,7 @@ class TestEdgeCases:
     @patch("gptme_consortium.tools.consortium._synthesize_consensus")
     def test_special_characters_in_responses(self, mock_synthesize, mock_query):
         """Test handling special characters in model responses."""
-        mock_query.return_value = (
-            'Response with "quotes", \\backslashes\\ and\nnewlines'
-        )
+        mock_query.return_value = 'Response with "quotes", \\backslashes\\ and\nnewlines'
         mock_synthesize.return_value = {
             "consensus": "Synthesized answer",
             "confidence": 0.8,

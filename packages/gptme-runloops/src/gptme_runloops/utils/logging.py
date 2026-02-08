@@ -68,10 +68,6 @@ def log_execution_end(
         exit_code: Exit code from execution
         duration_seconds: Duration in seconds
     """
-    status = (
-        "completed successfully"
-        if exit_code == 0
-        else f"failed (exit code: {exit_code})"
-    )
+    status = "completed successfully" if exit_code == 0 else f"failed (exit code: {exit_code})"
     logger.info(f"{run_type} run {status}")
     logger.info(f"Duration: {duration_seconds:.1f} seconds")

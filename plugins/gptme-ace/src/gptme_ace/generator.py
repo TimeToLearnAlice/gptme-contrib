@@ -26,14 +26,13 @@ Optimizations:
 """
 
 import json
+import logging
 import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional
 
 import click
-
-import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -291,9 +290,7 @@ class TrajectoryParser:
                 obs_pattern, self.content[obs_start : obs_start + 2000], re.DOTALL
             )
 
-            observation = (
-                obs_match.group(1).strip()[:500] if obs_match else "(no observation)"
-            )
+            observation = obs_match.group(1).strip()[:500] if obs_match else "(no observation)"
 
             chains.append(
                 ThoughtActionObservation(
@@ -319,9 +316,7 @@ class GeneratorAgent:
             model: Anthropic model name (uses gptme config/GPTME_ACE_MODEL if not set)
         """
         if anthropic is None:
-            raise ImportError(
-                "anthropic package required. Install: pip install anthropic"
-            )
+            raise ImportError("anthropic package required. Install: pip install anthropic")
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model if model else _get_default_anthropic_model()
 
@@ -473,9 +468,7 @@ def cli():
 
 @cli.command()
 @click.argument("log_path", type=click.Path(exists=True))
-@click.option(
-    "--output", "-o", type=click.Path(), help="Output file for insights (JSON)"
-)
+@click.option("--output", "-o", type=click.Path(), help="Output file for insights (JSON)")
 @click.option(
     "--api-key",
     envvar="ANTHROPIC_API_KEY",

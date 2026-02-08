@@ -5,7 +5,6 @@ Phase 1-2 already provide comprehensive unit/integration tests with real APIs.
 """
 
 import pytest
-
 from gptme_imagen.tools.image_gen import ImageResult, generate_image
 
 
@@ -103,9 +102,7 @@ class TestEdgeCases:
         path_with_spaces = tmp_path / "test image (v2).png"
 
         try:
-            generate_image(
-                prompt="Test", provider="gemini", output_path=str(path_with_spaces)
-            )
+            generate_image(prompt="Test", provider="gemini", output_path=str(path_with_spaces))
         except RuntimeError:
             pass  # Expected - API not available
 

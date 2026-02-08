@@ -5,8 +5,8 @@ Provides decorators and utilities for retrying failed operations
 with configurable backoff strategies and error handling.
 """
 
-import time
 import functools
+import time
 from dataclasses import dataclass
 from typing import Callable, Optional
 

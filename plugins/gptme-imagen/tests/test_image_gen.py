@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import patch
 
 import pytest
-
 from gptme_imagen.tools.image_gen import (
     ImageResult,
     generate_image,
@@ -51,9 +50,7 @@ class TestGenerateImage:
                 metadata={},
             )
 
-            result = generate_image(
-                prompt="test", provider="gemini", output_path="test.png"
-            )
+            result = generate_image(prompt="test", provider="gemini", output_path="test.png")
 
             # Path should be absolute
             assert result.image_path.is_absolute()
@@ -70,9 +67,7 @@ class TestGenerateImage:
                 metadata={},
             )
 
-            result = generate_image(
-                prompt="test", provider="gemini", output_path=str(output_path)
-            )
+            result = generate_image(prompt="test", provider="gemini", output_path=str(output_path))
 
             assert result.image_path == output_path
 

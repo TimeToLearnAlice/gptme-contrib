@@ -24,9 +24,7 @@ from pathlib import Path
 import pytest
 
 # Path to hooks (relative to gptme-contrib root)
-HOOKS_DIR = (
-    Path(__file__).parent.parent.parent / "dotfiles" / ".config" / "git" / "hooks"
-)
+HOOKS_DIR = Path(__file__).parent.parent.parent / "dotfiles" / ".config" / "git" / "hooks"
 
 
 @pytest.fixture

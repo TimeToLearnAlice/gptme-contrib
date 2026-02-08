@@ -156,12 +156,8 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
                         console.print("[yellow]Access token expired, refreshing...")
 
                         # Use OAuthManager to refresh token
-                        oauth_manager = OAuthManager.for_twitter(
-                            client_id, client_secret
-                        )
-                        new_token_info, error = oauth_manager.refresh_token(
-                            saved_refresh_token
-                        )
+                        oauth_manager = OAuthManager.for_twitter(client_id, client_secret)
+                        new_token_info, error = oauth_manager.refresh_token(saved_refresh_token)
 
                         if error or not new_token_info:
                             raise Exception(f"Token refresh failed: {error}")
@@ -196,20 +192,14 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
                     # Test the credentials
                     test = cached_get_me(client, user_auth=False)
                     if test.data:
-                        console.print(
-                            f"[green]Successfully authenticated as @{test.data.username}"
-                        )
+                        console.print(f"[green]Successfully authenticated as @{test.data.username}")
                         return client
                 except Exception as e:
                     console.print(f"[yellow]Saved token/refresh failed: {e}")
                     console.print("[yellow]Starting new OAuth 2.0 flow...")
             elif saved_token:
-                console.print(
-                    "[yellow]Saved token exists but missing refresh token or expiry"
-                )
-                console.print(
-                    "[yellow]Starting new OAuth 2.0 flow to get complete credentials..."
-                )
+                console.print("[yellow]Saved token exists but missing refresh token or expiry")
+                console.print("[yellow]Starting new OAuth 2.0 flow to get complete credentials...")
 
             try:
                 # Initialize OAuth 2.0 handler
@@ -228,9 +218,7 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
                 console.print(f"[blue]{auth_url}")
 
                 # Wait for OAuth callback using shared utility
-                console.print(
-                    "[yellow]Waiting for authorization (timeout: 5 minutes)..."
-                )
+                console.print("[yellow]Waiting for authorization (timeout: 5 minutes)...")
                 try:
                     response_code, full_url = run_oauth_callback(port=9876, timeout=300)
                     console.print("[green]Authorization received!")
@@ -244,9 +232,7 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
                     raise
 
                 # Get access token using the full callback URL
-                access_token = oauth2_user_handler.fetch_token(
-                    authorization_response=full_url
-                )
+                access_token = oauth2_user_handler.fetch_token(authorization_response=full_url)
                 print(f"{access_token=}")
 
                 # Save all tokens to .env using shared utility
@@ -267,9 +253,7 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
 
                     # Calculate and save expiration time
                     if "expires_in" in access_token:
-                        expires_at = datetime.now() + timedelta(
-                            seconds=access_token["expires_in"]
-                        )
+                        expires_at = datetime.now() + timedelta(seconds=access_token["expires_in"])
                         save_token_to_env(
                             "TWITTER_OAUTH2_EXPIRES_AT",
                             expires_at.isoformat(),
@@ -277,9 +261,7 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
                         )
 
                     if "refresh_token" in access_token:
-                        console.print(
-                            "[yellow]Saved OAuth 2.0 tokens with refresh capability"
-                        )
+                        console.print("[yellow]Saved OAuth 2.0 tokens with refresh capability")
                     else:
                         console.print(
                             "[yellow]Warning: No refresh token received (add 'offline.access' scope)"
@@ -290,23 +272,17 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
 
                 # Create client with OAuth 2.0 User Context authentication
                 client = tweepy.Client(
-                    access_token[
-                        "access_token"
-                    ],  # Pass access token directly as first argument
+                    access_token["access_token"],  # Pass access token directly as first argument
                     wait_on_rate_limit=True,
                 )
 
                 # Test the credentials with OAuth 2.0
                 test = cached_get_me(client, user_auth=False)
                 if test.data:
-                    console.print(
-                        f"[green]Successfully authenticated as @{test.data.username}"
-                    )
+                    console.print(f"[green]Successfully authenticated as @{test.data.username}")
                     return client
                 else:
-                    console.print(
-                        "[red]Could not get user info after OAuth 2.0 authentication"
-                    )
+                    console.print("[red]Could not get user info after OAuth 2.0 authentication")
                     sys.exit(1)
 
             except tweepy.TweepyException as e:
@@ -329,21 +305,13 @@ def load_twitter_client(require_auth: bool = False) -> tweepy.Client:
 
         # Debug info for OAuth 1.0a credentials
         console.print("[yellow]Debug: Using OAuth 1.0a authentication")
+        console.print(f"  API Key: {api_key[:8]}..." if api_key else "  API Key: Missing")
+        console.print(f"  API Secret: {'*' * 8}..." if api_secret else "  API Secret: Missing")
         console.print(
-            f"  API Key: {api_key[:8]}..." if api_key else "  API Key: Missing"
+            f"  Access Token: {access_token[:8]}..." if access_token else "  Access Token: Missing"
         )
         console.print(
-            f"  API Secret: {'*' * 8}..." if api_secret else "  API Secret: Missing"
-        )
-        console.print(
-            f"  Access Token: {access_token[:8]}..."
-            if access_token
-            else "  Access Token: Missing"
-        )
-        console.print(
-            f"  Access Secret: {'*' * 8}..."
-            if access_secret
-            else "  Access Secret: Missing"
+            f"  Access Secret: {'*' * 8}..." if access_secret else "  Access Secret: Missing"
         )
 
         # Verify all OAuth credentials are present
@@ -551,9 +519,7 @@ def post(text: str, reply_to: Optional[str], thread: bool) -> None:
             console.print(f"[green]Posted tweet: {message.text}")
     else:
         # Single tweet
-        response = client.create_tweet(
-            text=text, in_reply_to_tweet_id=reply_to, user_auth=False
-        )
+        response = client.create_tweet(text=text, in_reply_to_tweet_id=reply_to, user_auth=False)
         if not response.data:
             console.print("[red]Error: No response data from tweet creation")
             sys.exit(1)
@@ -614,9 +580,7 @@ def user(username: str, limit: int) -> None:
 @cli.command()
 @click.argument("username")
 @click.option("--since", default=DEFAULT_SINCE, help="Time window (e.g. 24h, 7d)")
-@click.option(
-    "--limit", default=DEFAULT_LIMIT, help="Maximum number of mentions to fetch"
-)
+@click.option("--limit", default=DEFAULT_LIMIT, help="Maximum number of mentions to fetch")
 def mentions(username: str, since: str, limit: int) -> None:
     """Check mentions of a specific user"""
     client = load_twitter_client(require_auth=False)
@@ -647,11 +611,7 @@ def mentions(username: str, since: str, limit: int) -> None:
         return
 
     # Create lookup for user info
-    users = (
-        {user.id: user for user in mentions.includes["users"]}
-        if mentions.includes
-        else {}
-    )
+    users = {user.id: user for user in mentions.includes["users"]} if mentions.includes else {}
 
     # Display mentions
     console.print(f"\n[bold]Recent mentions of @{username}:[/bold]\n")
@@ -665,9 +625,7 @@ def mentions(username: str, since: str, limit: int) -> None:
 
 @cli.command()
 @click.option("--since", default=DEFAULT_SINCE, help="Time window (e.g. 24h, 7d)")
-@click.option(
-    "--limit", default=DEFAULT_LIMIT, help="Maximum number of replies to fetch"
-)
+@click.option("--limit", default=DEFAULT_LIMIT, help="Maximum number of replies to fetch")
 @click.option("--unanswered", is_flag=True, help="Show only unanswered tweets")
 def replies(since: str, limit: int, unanswered: bool) -> None:
     """Check replies to our tweets"""
@@ -715,9 +673,7 @@ def replies(since: str, limit: int, unanswered: bool) -> None:
 
 @cli.command()
 @click.option("--since", default=DEFAULT_SINCE, help="Time window (e.g. 24h, 7d)")
-@click.option(
-    "--limit", default=DEFAULT_LIMIT, help="Maximum number of replies to fetch"
-)
+@click.option("--limit", default=DEFAULT_LIMIT, help="Maximum number of replies to fetch")
 @click.option("--unanswered", is_flag=True, help="Show only unanswered tweets")
 def quotes(since: str, limit: int, unanswered: bool) -> None:
     """Check quotes of our tweets"""
@@ -731,9 +687,7 @@ def quotes(since: str, limit: int, unanswered: bool) -> None:
 
     # Get quotes since the specified time
     start_time = parse_time(since)
-    query = (
-        f"url:{me.data.username}"  # Search for tweets containing links to our tweets
-    )
+    query = f"url:{me.data.username}"  # Search for tweets containing links to our tweets
     quotes = client.search_recent_tweets(
         query=query,
         max_results=limit,
@@ -752,9 +706,7 @@ def quotes(since: str, limit: int, unanswered: bool) -> None:
         return
 
     # Create lookup for user info
-    users = (
-        {user.id: user for user in quotes.includes["users"]} if quotes.includes else {}
-    )
+    users = {user.id: user for user in quotes.includes["users"]} if quotes.includes else {}
 
     # Display quotes in a simpler format
     console.print("\n[bold]Recent Quotes:[/bold]")
@@ -788,9 +740,7 @@ def quotes(since: str, limit: int, unanswered: bool) -> None:
 
 @cli.command()
 @click.option("--since", default=DEFAULT_SINCE, help="Time window (e.g. 24h, 7d)")
-@click.option(
-    "--limit", default=DEFAULT_LIMIT, help="Maximum number of tweets to fetch"
-)
+@click.option("--limit", default=DEFAULT_LIMIT, help="Maximum number of tweets to fetch")
 @click.option("--list-id", help="Twitter list ID to fetch from")
 def timeline(since: str, limit: int, list_id: Optional[str]) -> None:
     """Read home timeline or list timeline"""
@@ -835,9 +785,7 @@ def timeline(since: str, limit: int, list_id: Optional[str]) -> None:
         return
 
     # Create lookup for user info
-    users = (
-        {user.id: user for user in tweets.includes["users"]} if tweets.includes else {}
-    )
+    users = {user.id: user for user in tweets.includes["users"]} if tweets.includes else {}
 
     # Display tweets
     console.print(f"\n[bold]Recent tweets from {source}:[/bold]\n")
@@ -851,16 +799,10 @@ def timeline(since: str, limit: int, list_id: Optional[str]) -> None:
 @cli.command()
 @click.argument("tweet_id")
 @click.option("--limit", default=100, help="Maximum number of tweets to fetch per page")
-@click.option(
-    "--max-pages", default=5, help="Maximum number of pagination pages to fetch"
-)
+@click.option("--max-pages", default=5, help="Maximum number of pagination pages to fetch")
 @click.option("--verbose", is_flag=True, help="Show detailed debug information")
-@click.option(
-    "--structure", is_flag=True, help="Show thread structure with indentation"
-)
-def thread(
-    tweet_id: str, limit: int, max_pages: int, verbose: bool, structure: bool
-) -> None:
+@click.option("--structure", is_flag=True, help="Show thread structure with indentation")
+def thread(tweet_id: str, limit: int, max_pages: int, verbose: bool, structure: bool) -> None:
     """Read a complete conversation thread given a tweet ID
 
     This command will:
@@ -946,16 +888,12 @@ def thread(
             page_count += 1
 
             if verbose:
-                console.print(
-                    f"[blue]Retrieved page {page_count} of conversation thread"
-                )
+                console.print(f"[blue]Retrieved page {page_count} of conversation thread")
 
             # Process results
             if conversation.data:
                 if verbose:
-                    console.print(
-                        f"[blue]Found {len(conversation.data)} tweets on this page"
-                    )
+                    console.print(f"[blue]Found {len(conversation.data)} tweets on this page")
 
                 # Add tweets to our collection, avoiding duplicates
                 for reply in conversation.data:
@@ -963,15 +901,10 @@ def thread(
 
                 # Add users to our collection
                 if conversation.includes and "users" in conversation.includes:
-                    all_users.update(
-                        {user.id: user for user in conversation.includes["users"]}
-                    )
+                    all_users.update({user.id: user for user in conversation.includes["users"]})
 
             # Check if there are more pages
-            if (
-                not hasattr(conversation, "meta")
-                or "next_token" not in conversation.meta
-            ):
+            if not hasattr(conversation, "meta") or "next_token" not in conversation.meta:
                 if verbose:
                     console.print("[blue]No more pages available")
                 break
@@ -979,9 +912,7 @@ def thread(
             next_token = conversation.meta["next_token"]
 
         except Exception as e:
-            console.print(
-                f"[red]Error retrieving conversation page {page_count + 1}: {e}"
-            )
+            console.print(f"[red]Error retrieving conversation page {page_count + 1}: {e}")
             break
 
     # No tweets found
@@ -1044,11 +975,7 @@ def thread(
                 console.print(f"{indent}[blue]Stats: {stats}[/blue]")
 
             # Find and display replies
-            replies = [
-                t_id
-                for t_id, reply_to_id in reply_to.items()
-                if reply_to_id == tweet_id
-            ]
+            replies = [t_id for t_id, reply_to_id in reply_to.items() if reply_to_id == tweet_id]
             for reply_id in replies:
                 display_thread(reply_id, level + 1)
 

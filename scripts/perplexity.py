@@ -13,12 +13,12 @@
 import json
 import logging
 import os
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
 import click
+import tomllib
 from dotenv import load_dotenv
 from openai import OpenAI
 from rich.console import Console

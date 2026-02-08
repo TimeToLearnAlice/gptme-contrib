@@ -104,9 +104,7 @@ class TestCLIIntegration:
         from gptme_runloops.project_monitoring import ProjectMonitoringRun
 
         # Test that ProjectMonitoringRun can be instantiated
-        run = ProjectMonitoringRun(
-            test_workspace, target_orgs=["test-org"], author="test-author"
-        )
+        run = ProjectMonitoringRun(test_workspace, target_orgs=["test-org"], author="test-author")
 
         # Verify basic properties
         assert run.workspace == test_workspace
@@ -187,9 +185,7 @@ class TestCLIIntegration:
 
         for cmd in commands:
             start = time.time()
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=10, check=True
-            )
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=10, check=True)
             duration = time.time() - start
 
             assert result.returncode == 0

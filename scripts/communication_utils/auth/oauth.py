@@ -8,8 +8,10 @@ and token refresh across different platforms.
 import base64
 from dataclasses import dataclass
 from typing import Optional
-from urllib.parse import urlencode, urlparse, parse_qs
+from urllib.parse import parse_qs, urlencode, urlparse
+
 import requests
+
 from .tokens import TokenInfo
 
 
@@ -140,9 +142,7 @@ class OAuthManager:
         except requests.RequestException as e:
             return None, f"Token exchange failed: {e}"
 
-    def refresh_token(
-        self, refresh_token: str
-    ) -> tuple[Optional[TokenInfo], Optional[str]]:
+    def refresh_token(self, refresh_token: str) -> tuple[Optional[TokenInfo], Optional[str]]:
         """
         Refresh an expired access token.
 

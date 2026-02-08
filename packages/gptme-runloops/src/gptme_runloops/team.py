@@ -16,7 +16,6 @@ from gptme_runloops.base import BaseRunLoop
 from gptme_runloops.utils.execution import ExecutionResult, execute_gptme
 from gptme_runloops.utils.prompt import get_agent_name
 
-
 TEAM_PROMPT_TEMPLATE = """\
 You are {agent_name}, running in **autonomous-team coordinator mode**.
 
@@ -114,8 +113,7 @@ class TeamRun(BaseRunLoop):
     def execute(self, prompt: str) -> ExecutionResult:
         """Execute gptme with restricted tools for coordinator mode."""
         self.logger.info(
-            f"Starting team coordinator (timeout: {self.timeout}s, "
-            f"tools: {self.tools})"
+            f"Starting team coordinator (timeout: {self.timeout}s, " f"tools: {self.tools})"
         )
 
         result = execute_gptme(

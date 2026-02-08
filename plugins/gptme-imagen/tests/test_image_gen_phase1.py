@@ -3,7 +3,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from gptme_imagen.tools.image_gen import ImageResult, generate_image
 
 
@@ -102,9 +101,7 @@ class TestMultipleImageGeneration:
                 ValueError("API error"),
             ]
 
-            with pytest.raises(
-                RuntimeError, match=r"Failed to generate image 2/3 with gemini"
-            ):
+            with pytest.raises(RuntimeError, match=r"Failed to generate image 2/3 with gemini"):
                 generate_image(prompt="test", provider="gemini", count=3)
 
 
@@ -150,23 +147,17 @@ class TestViewIntegration:
         with patch("gptme_imagen.tools.image_gen._generate_gemini") as mock_gen:
             paths = [tmp_path / f"test_{i}.png" for i in range(3)]
             mock_gen.side_effect = [
-                ImageResult(
-                    provider="gemini", prompt="test", image_path=path, metadata={}
-                )
+                ImageResult(provider="gemini", prompt="test", image_path=path, metadata={})
                 for path in paths
             ]
 
             with patch("gptme.tools.vision.view_image") as mock_view_image:
-                _result = generate_image(
-                    prompt="test", provider="gemini", count=3, view=True
-                )
+                _result = generate_image(prompt="test", provider="gemini", count=3, view=True)
 
                 # view_image should be called 3 times, once for each image
                 assert mock_view_image.call_count == 3
                 for path in paths:
-                    assert any(
-                        call[0][0] == path for call in mock_view_image.call_args_list
-                    )
+                    assert any(call[0][0] == path for call in mock_view_image.call_args_list)
 
     def test_view_graceful_fallback_import_error(self, tmp_path):
         """Test that ImportError in view_image is handled gracefully."""
@@ -245,8 +236,6 @@ class TestExecuteFunction:
                 metadata={},
             )
 
-            output = _execute_generate_image(
-                prompt="test", provider="gemini", view=True
-            )
+            output = _execute_generate_image(prompt="test", provider="gemini", view=True)
 
             assert "✓ Images displayed to assistant for review" in output

@@ -162,9 +162,7 @@ def deltas_list(ctx: click.Context, status: str, limit: int, json_output: bool) 
 
     for delta in deltas:
         icon = status_icons.get(delta.review_status, "❓")
-        ops_summary = ", ".join(
-            f"{op.type}:{op.section[:20]}" for op in delta.operations[:3]
-        )
+        ops_summary = ", ".join(f"{op.type}:{op.section[:20]}" for op in delta.operations[:3])
         if len(delta.operations) > 3:
             ops_summary += f" +{len(delta.operations) - 3} more"
 
@@ -416,9 +414,7 @@ def metrics_quality(ctx: click.Context, days: int, json_output: bool) -> None:
             "period_days": days,
             "total_insights": len(insights),
             "avg_quality": (
-                sum(i.quality_score for i in insights) / len(insights)
-                if insights
-                else 0
+                sum(i.quality_score for i in insights) / len(insights) if insights else 0
             ),
             "actionable_count": sum(1 for i in insights if i.actionable),
             "novel_count": sum(1 for i in insights if i.novel),
@@ -445,9 +441,7 @@ def metrics_quality(ctx: click.Context, days: int, json_output: bool) -> None:
 
     click.echo(f"Total Insights: {len(insights)}")
     click.echo(f"Average Quality: {avg_quality:.2f}")
-    click.echo(
-        f"Actionable: {actionable_count} ({actionable_count/len(insights)*100:.1f}%)"
-    )
+    click.echo(f"Actionable: {actionable_count} ({actionable_count/len(insights)*100:.1f}%)")
     click.echo(f"Novel: {novel_count} ({novel_count/len(insights)*100:.1f}%)")
 
     # By category
@@ -595,9 +589,7 @@ def metrics_trends(ctx: click.Context, days: int, json_output: bool) -> None:
         conversions = sum(r.conversions for r in week_runs)
         insight_count = len(week_insights)
         avg_quality = (
-            sum(i.quality_score for i in week_insights) / len(week_insights)
-            if week_insights
-            else 0
+            sum(i.quality_score for i in week_insights) / len(week_insights) if week_insights else 0
         )
 
         click.echo(
@@ -732,9 +724,7 @@ def dashboard(ctx: click.Context, json_output: bool) -> None:
         actionable = sum(1 for i in insights_7d if i.actionable)
         click.echo(f"   Count: {len(insights_7d)}")
         click.echo(f"   Avg Quality: {avg_quality:.2f}")
-        click.echo(
-            f"   Actionable: {actionable} ({actionable/len(insights_7d)*100:.0f}%)"
-        )
+        click.echo(f"   Actionable: {actionable} ({actionable/len(insights_7d)*100:.0f}%)")
     else:
         click.echo("   No insights in last 7 days")
 

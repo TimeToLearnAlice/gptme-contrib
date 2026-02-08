@@ -3,10 +3,10 @@
 Implements Phase 5.2 of ACE context optimization.
 """
 
+import math
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
-import math
 
 import numpy as np
 
@@ -192,9 +192,7 @@ class HybridLessonMatcher:
             # Handle both Path and string types for lesson.path
             from pathlib import Path
 
-            lesson_path = (
-                Path(lesson.path) if isinstance(lesson.path, str) else lesson.path
-            )
+            lesson_path = Path(lesson.path) if isinstance(lesson.path, str) else lesson.path
             lesson_id = self.embedder._lesson_to_id(lesson_path)
             metadata = self.embedder.metadata.get(lesson_id, {})
 

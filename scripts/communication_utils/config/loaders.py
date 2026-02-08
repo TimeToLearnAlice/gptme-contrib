@@ -210,9 +210,7 @@ class YAMLLoader:
         return value
 
 
-def load_multiple_env_files(
-    workspace_dir: Path, env_files: list[str]
-) -> Dict[str, str]:
+def load_multiple_env_files(workspace_dir: Path, env_files: list[str]) -> Dict[str, str]:
     """
     Load multiple .env files in order.
 

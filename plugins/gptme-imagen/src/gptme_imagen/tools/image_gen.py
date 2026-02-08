@@ -129,9 +129,7 @@ def generate_image(
     # Validate provider early
     valid_providers = ("gemini", "dalle", "dalle2")
     if provider not in valid_providers:
-        raise ValueError(
-            f"Unknown provider: {provider}. Must be one of: {valid_providers}"
-        )
+        raise ValueError(f"Unknown provider: {provider}. Must be one of: {valid_providers}")
 
     # Normalize and validate images parameter
     image_paths: list[Path] | None = None
@@ -207,17 +205,11 @@ def generate_image(
         # Generate single image
         try:
             if provider == "gemini":
-                result = _generate_gemini(
-                    prompt, size, quality, current_path, image_paths
-                )
+                result = _generate_gemini(prompt, size, quality, current_path, image_paths)
             elif provider == "dalle":
-                result = _generate_dalle(
-                    prompt, size, quality, current_path, model="dall-e-3"
-                )
+                result = _generate_dalle(prompt, size, quality, current_path, model="dall-e-3")
             elif provider == "dalle2":
-                result = _generate_dalle(
-                    prompt, size, quality, current_path, model="dall-e-2"
-                )
+                result = _generate_dalle(prompt, size, quality, current_path, model="dall-e-2")
             else:
                 raise ValueError(f"Unknown provider: {provider}")
 
@@ -236,15 +228,13 @@ def generate_image(
             error_msg = f"Failed to generate image {i + 1}/{count} with {provider}"
             if "api key" in str(e).lower():
                 env_var = PROVIDER_ENV_VAR.get(provider, f"{provider.upper()}_API_KEY")
-                error_msg += f": Missing or invalid API key. Check your {env_var} environment variable."
+                error_msg += (
+                    f": Missing or invalid API key. Check your {env_var} environment variable."
+                )
             elif "quota" in str(e).lower() or "rate limit" in str(e).lower():
-                error_msg += (
-                    ": API quota or rate limit exceeded. Wait a moment and try again."
-                )
+                error_msg += ": API quota or rate limit exceeded. Wait a moment and try again."
             elif "network" in str(e).lower() or "connection" in str(e).lower():
-                error_msg += (
-                    ": Network connection issue. Check your internet connection."
-                )
+                error_msg += ": Network connection issue. Check your internet connection."
             else:
                 error_msg += f": {e}"
 
@@ -332,9 +322,7 @@ def _generate_gemini(
         from google import genai  # type: ignore[import-not-found]
         from google.genai import types  # type: ignore[import-not-found]
     except ImportError:
-        raise ImportError(
-            "google-genai not installed. Install with: pip install google-genai"
-        )
+        raise ImportError("google-genai not installed. Install with: pip install google-genai")
 
     # Configure API key
     api_key = _get_api_key("GOOGLE_API_KEY") or _get_api_key("GEMINI_API_KEY")
@@ -458,9 +446,7 @@ def _generate_dalle(
     # Calculate and record cost
     cost_tracker = get_cost_tracker()
     provider = "dalle" if model == "dall-e-3" else "dalle2"
-    cost = cost_tracker.calculate_cost(
-        provider=provider, quality=quality, count=1, model=model
-    )
+    cost = cost_tracker.calculate_cost(provider=provider, quality=quality, count=1, model=model)
     cost_tracker.record_generation(
         provider=provider,
         prompt=prompt,

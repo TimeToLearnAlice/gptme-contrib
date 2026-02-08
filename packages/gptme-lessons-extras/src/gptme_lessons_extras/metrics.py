@@ -6,12 +6,12 @@ Analyzes lesson effectiveness across the agent network using evolution tracking 
 Generates network-wide insights about lesson success rates, adoption patterns, and best practices.
 """
 
+import argparse
 import json
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
-import argparse
-from datetime import datetime
 
 
 @dataclass
@@ -88,9 +88,7 @@ class MetricsAggregator:
 
         for version in history.get("versions", []):
             version_num = version["version"]
-            contributors = [
-                version.get("contributor", history.get("origin_agent", "unknown"))
-            ]
+            contributors = [version.get("contributor", history.get("origin_agent", "unknown"))]
             all_contributors.update(contributors)
 
             # Estimate uses from version existence (simplification for MVP)
@@ -171,9 +169,7 @@ class MetricsAggregator:
 
         return network_metrics
 
-    def identify_best_practices(
-        self, min_adoption: int = 2
-    ) -> list[tuple[str, LessonMetrics]]:
+    def identify_best_practices(self, min_adoption: int = 2) -> list[tuple[str, LessonMetrics]]:
         """
         Identify best practices based on success rate and adoption.
 
@@ -244,9 +240,7 @@ class MetricsAggregator:
 
         report = []
         report.append("# Lesson Network Metrics Report")
-        report.append(
-            f"\n**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n"
-        )
+        report.append(f"\n**Generated**: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
 
         # Network summary
         report.append("## Network Summary\n")
@@ -261,9 +255,7 @@ class MetricsAggregator:
             total_adoption = sum(m.adoption_count for m in network_metrics.values())
             report.append(f"- **Total adoptions**: {total_adoption}")
 
-            max_adoption = max(
-                (m.adoption_count for m in network_metrics.values()), default=0
-            )
+            max_adoption = max((m.adoption_count for m in network_metrics.values()), default=0)
             report.append(f"- **Maximum adoption**: {max_adoption} agents\n")
 
         # Best practices
@@ -307,9 +299,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # Lesson metrics command
-    lesson_parser = subparsers.add_parser(
-        "lesson", help="Get metrics for specific lesson"
-    )
+    lesson_parser = subparsers.add_parser("lesson", help="Get metrics for specific lesson")
     lesson_parser.add_argument("lesson_id", help="Lesson identifier")
 
     # Network metrics command

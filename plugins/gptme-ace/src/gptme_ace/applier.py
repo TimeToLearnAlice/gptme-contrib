@@ -148,9 +148,7 @@ class DeltaApplier:
         # Apply each operation
         for op in delta.operations:
             try:
-                modified_content = self._apply_operation(
-                    modified_content, op, delta.lesson_id
-                )
+                modified_content = self._apply_operation(modified_content, op, delta.lesson_id)
                 result["operations_applied"] += 1
             except ApplierError as e:
                 result["operations_failed"] += 1
@@ -323,9 +321,7 @@ class DeltaApplier:
 
         return content[:section_start] + new_section + content[section_end:]
 
-    def _generate_diff_preview(
-        self, original: str, modified: str, context_lines: int = 3
-    ) -> str:
+    def _generate_diff_preview(self, original: str, modified: str, context_lines: int = 3) -> str:
         """Generate a simple diff preview for dry-run mode"""
         import difflib
 
@@ -435,16 +431,12 @@ def main():
     apply_parser = subparsers.add_parser("apply", help="Apply a single delta")
     apply_parser.add_argument("--delta-id", required=True, help="Delta ID to apply")
     apply_parser.add_argument("--lessons-dir", type=Path, help="Lessons directory")
-    apply_parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would happen"
-    )
+    apply_parser.add_argument("--dry-run", action="store_true", help="Show what would happen")
 
     # Batch apply all approved
     batch_parser = subparsers.add_parser("batch", help="Apply all approved deltas")
     batch_parser.add_argument("--lessons-dir", type=Path, help="Lessons directory")
-    batch_parser.add_argument(
-        "--dry-run", action="store_true", help="Show what would happen"
-    )
+    batch_parser.add_argument("--dry-run", action="store_true", help="Show what would happen")
 
     # List status
     _ = subparsers.add_parser("status", help="Show delta status")
@@ -475,9 +467,7 @@ def main():
         deltas = applier.list_approved_deltas()
         print(f"Approved deltas ready to apply: {len(deltas)}")
         for delta in deltas:
-            print(
-                f"  - {delta.delta_id}: {delta.lesson_id} ({len(delta.operations)} ops)"
-            )
+            print(f"  - {delta.delta_id}: {delta.lesson_id} ({len(delta.operations)} ops)")
 
     else:
         parser.print_help()

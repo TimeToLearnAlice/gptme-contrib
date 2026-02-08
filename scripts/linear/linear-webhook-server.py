@@ -25,9 +25,9 @@ import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-from dotenv import load_dotenv
-from flask import Flask, request, jsonify
 import httpx
+from dotenv import load_dotenv
+from flask import Flask, jsonify, request
 
 
 # Configure structured logging
@@ -97,9 +97,7 @@ DEFAULT_BRANCH: str = _default_branch
 # Derived paths
 LOGS_DIR = AGENT_WORKSPACE / "logs" / "linear-sessions"
 NOTIFICATIONS_DIR = Path(
-    os.environ.get(
-        "NOTIFICATIONS_DIR", str(AGENT_WORKSPACE / "logs" / "linear-notifications")
-    )
+    os.environ.get("NOTIFICATIONS_DIR", str(AGENT_WORKSPACE / "logs" / "linear-notifications"))
 )
 WORKTREE_BASE = Path(
     os.environ.get("WORKTREE_BASE", AGENT_WORKSPACE.parent / f"{AGENT_NAME}-worktrees")
@@ -198,7 +196,7 @@ def get_access_token() -> str | None:
             # Support both camelCase and snake_case keys
             access_token = tokens.get("accessToken") or tokens.get("access_token")
             return str(access_token) if access_token else None
-        except (json.JSONDecodeError, IOError):
+        except (OSError, json.JSONDecodeError):
             pass
 
     return None
@@ -226,9 +224,7 @@ def store_notification(payload: dict) -> Path:
 
     # Extract key identifiers for logging
     session_id = payload.get("agentSession", {}).get("id", "no-session")
-    issue_id = (
-        payload.get("agentSession", {}).get("issue", {}).get("identifier", "no-issue")
-    )
+    issue_id = payload.get("agentSession", {}).get("issue", {}).get("identifier", "no-issue")
 
     notification = {
         "timestamp": timestamp,
@@ -243,9 +239,7 @@ def store_notification(payload: dict) -> Path:
     return filepath
 
 
-def emit_activity(
-    session_id: str, content: str, activity_type: str = "thought"
-) -> bool:
+def emit_activity(session_id: str, content: str, activity_type: str = "thought") -> bool:
     """Emit an activity to a Linear agent session."""
     token = get_access_token()
     if not token:
@@ -306,9 +300,7 @@ def emit_activity(
         return False
 
     except Exception as e:
-        log.error(
-            f"SESSION_ACTIVITY_ERROR | session={session_id} type={activity_type} error={e}"
-        )
+        log.error(f"SESSION_ACTIVITY_ERROR | session={session_id} type={activity_type} error={e}")
         return False
 
 
@@ -322,9 +314,7 @@ def create_worktree(session_id: str) -> Path:
 
     # Remove existing worktree if present
     if worktree_path.exists():
-        log.info(
-            f"SESSION_WORKTREE_CLEANUP | session={session_id} path={worktree_path}"
-        )
+        log.info(f"SESSION_WORKTREE_CLEANUP | session={session_id} path={worktree_path}")
         subprocess.run(
             ["git", "worktree", "remove", "-f", str(worktree_path)],
             cwd=AGENT_WORKSPACE,
@@ -369,9 +359,7 @@ def create_worktree(session_id: str) -> Path:
 
     # Verify worktree was actually created
     if not worktree_path.exists():
-        log.error(
-            f"SESSION_WORKTREE_MISSING | session={session_id} path={worktree_path}"
-        )
+        log.error(f"SESSION_WORKTREE_MISSING | session={session_id} path={worktree_path}")
         raise RuntimeError(
             f"git worktree add reported success but directory not created: {worktree_path}"
         )
@@ -458,9 +446,7 @@ def cleanup_worktree(session_id: str, worktree_path: Path):
                 cwd=AGENT_WORKSPACE,
                 capture_output=True,
             )
-            log.info(
-                f"SESSION_CLEANUP_COMPLETE | session={session_id} branch={branch_name}"
-            )
+            log.info(f"SESSION_CLEANUP_COMPLETE | session={session_id} branch={branch_name}")
     except Exception as e:
         log.error(f"SESSION_CLEANUP_ERROR | session={session_id} error={e}")
 
@@ -600,9 +586,7 @@ def spawn_gptme(worktree_path: Path, prompt: str, session_id: str) -> int:
             f.write(f"TIMEOUT after {GPTME_TIMEOUT} seconds\n")
         return 1
     except Exception as e:
-        log.error(
-            f"SESSION_GPTME_ERROR | session={session_id} error={e} log_file={log_file}"
-        )
+        log.error(f"SESSION_GPTME_ERROR | session={session_id} error={e} log_file={log_file}")
         with open(log_file, "a") as f:
             f.write(f"\n{'=' * 50}\n")
             f.write(f"ERROR: {e}\n")
@@ -641,16 +625,12 @@ def process_agent_session_event(payload: dict, filepath: Path):
             notification["error_time"] = datetime.now(timezone.utc).isoformat()
             filepath.write_text(json.dumps(notification, indent=2))
         except Exception as e:
-            log.error(
-                f"SESSION_NOTIFICATION_UPDATE_FAILED | session={session_id} error={e}"
-            )
+            log.error(f"SESSION_NOTIFICATION_UPDATE_FAILED | session={session_id} error={e}")
         return
 
     # Deduplication
     if session_id in processed_sessions:
-        log.info(
-            f"SESSION_DUPLICATE | session={session_id} - already processed, skipping"
-        )
+        log.info(f"SESSION_DUPLICATE | session={session_id} - already processed, skipping")
         return
 
     processed_sessions.add(session_id)
@@ -662,9 +642,7 @@ def process_agent_session_event(payload: dict, filepath: Path):
 
     threading.Thread(target=cleanup_session, daemon=True).start()
 
-    log.info(
-        f"SESSION_PROCESSING | session={session_id} issue={issue_identifier} action={action}"
-    )
+    log.info(f"SESSION_PROCESSING | session={session_id} issue={issue_identifier} action={action}")
 
     # Emit acknowledgment
     emit_activity(
@@ -775,9 +753,7 @@ def webhook():
 
     # Verify signature
     if not verify_signature(raw_body, signature):
-        log.warning(
-            "WEBHOOK_SIGNATURE_INVALID | rejecting request with invalid signature"
-        )
+        log.warning("WEBHOOK_SIGNATURE_INVALID | rejecting request with invalid signature")
         return "Invalid signature", 401
 
     payload = request.get_json()
@@ -789,9 +765,7 @@ def webhook():
     event_type = payload.get("type", "unknown")
     action = payload.get("action", "unknown")
     session_id = payload.get("agentSession", {}).get("id", "no-session")
-    issue_id = (
-        payload.get("agentSession", {}).get("issue", {}).get("identifier", "no-issue")
-    )
+    issue_id = payload.get("agentSession", {}).get("issue", {}).get("identifier", "no-issue")
 
     log.info(
         f"WEBHOOK_RECEIVED | type={event_type} action={action} session={session_id} issue={issue_id}"
@@ -810,9 +784,7 @@ def webhook():
         )
         thread.start()
     else:
-        log.debug(
-            f"WEBHOOK_IGNORED | type={event_type} action={action} - not an AgentSessionEvent"
-        )
+        log.debug(f"WEBHOOK_IGNORED | type={event_type} action={action} - not an AgentSessionEvent")
 
     return "OK", 200
 
@@ -1031,9 +1003,7 @@ def index():
 
 def main():
     if not WEBHOOK_SECRET:
-        log.error(
-            "STARTUP_FAILED | LINEAR_WEBHOOK_SECRET environment variable required"
-        )
+        log.error("STARTUP_FAILED | LINEAR_WEBHOOK_SECRET environment variable required")
         sys.exit(1)
 
     log.info(f"STARTUP | port={PORT} agent={AGENT_NAME}")

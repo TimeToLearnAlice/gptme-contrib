@@ -72,9 +72,7 @@ class BaseRunLoop(ABC):
         # Acquire lock
         self.logger.info(f"Acquiring lock for {self.run_type} run...")
         if not self.lock.acquire(wait=self.lock_wait):
-            self.logger.warning(
-                f"Failed to acquire lock (another {self.run_type} session running)"
-            )
+            self.logger.warning(f"Failed to acquire lock (another {self.run_type} session running)")
             return False
 
         self.logger.info("Lock acquired successfully")

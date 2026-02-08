@@ -55,8 +55,7 @@ class LessonEmbedder:
 
     def __init__(
         self,
-        lessons_dir: Path = Path(__file__).parent.parent.parent.parent.parent
-        / "lessons",
+        lessons_dir: Path = Path(__file__).parent.parent.parent.parent.parent / "lessons",
         embeddings_dir: Path = Path(__file__).parent.parent.parent.parent.parent
         / "embeddings"
         / "lessons",
@@ -331,9 +330,7 @@ class LessonEmbedder:
                 dim = self.config["embedding_dim"]
                 self.index = faiss.IndexFlatL2(dim)
             else:
-                self.index = np.zeros(
-                    (0, self.config["embedding_dim"]), dtype=np.float32
-                )
+                self.index = np.zeros((0, self.config["embedding_dim"]), dtype=np.float32)
 
         generated = 0
         skipped = 0
@@ -379,9 +376,7 @@ class LessonEmbedder:
                 "embedded_at": datetime.utcnow().isoformat() + "Z",
                 "model": self.model_name,
                 "path": str(lesson_path.relative_to(self.lessons_dir)),
-                "index": (
-                    self.index.ntotal - 1 if FAISS_AVAILABLE else len(self.index) - 1
-                ),
+                "index": (self.index.ntotal - 1 if FAISS_AVAILABLE else len(self.index) - 1),
             }
 
             generated += 1
@@ -502,9 +497,7 @@ class LessonEmbedder:
 
         if FAISS_AVAILABLE:
             # Search
-            distances, indices = self.index.search(
-                query_embedding.reshape(1, -1), top_k
-            )
+            distances, indices = self.index.search(query_embedding.reshape(1, -1), top_k)
 
             # Convert to results
             results = []
@@ -604,9 +597,7 @@ class LessonEmbedder:
             return {}
 
         # Get lesson IDs in order
-        lesson_ids = sorted(
-            self.metadata.keys(), key=lambda x: self.metadata[x]["index"]
-        )
+        lesson_ids = sorted(self.metadata.keys(), key=lambda x: self.metadata[x]["index"])
 
         if len(lesson_ids) < 2:
             return {0: lesson_ids}
@@ -668,9 +659,7 @@ class LessonEmbedder:
 
         return clusters
 
-    def print_duplicate_report(
-        self, threshold: float = 0.85, min_similarity: float = 0.7
-    ):
+    def print_duplicate_report(self, threshold: float = 0.85, min_similarity: float = 0.7):
         """Print formatted report of potential duplicate lessons.
 
         Args:
@@ -683,9 +672,7 @@ class LessonEmbedder:
             print(f"✓ No duplicates found (threshold >= {threshold})")
             return
 
-        print(
-            f"\n⚠ Found {len(duplicates)} potential duplicates (similarity >= {threshold}):\n"
-        )
+        print(f"\n⚠ Found {len(duplicates)} potential duplicates (similarity >= {threshold}):\n")
 
         for lesson1, lesson2, similarity in duplicates:
             print(f"  • {similarity:.3f}: {lesson1} ↔ {lesson2}")
@@ -813,9 +800,7 @@ class LessonEmbedder:
 
     # === Phase 4.3: Deduplication Workflow ===
 
-    def check_new_lesson(
-        self, text: str, threshold: float = 0.55
-    ) -> List[Tuple[str, float]]:
+    def check_new_lesson(self, text: str, threshold: float = 0.55) -> List[Tuple[str, float]]:
         """
         Check if new lesson text is too similar to existing lessons.
 
@@ -923,17 +908,13 @@ class LessonEmbedder:
                     "path": meta2["path"],
                 },
                 "similarity": similarity,
-                "recommendation": self._get_merge_recommendation(
-                    name1, name2, similarity
-                ),
+                "recommendation": self._get_merge_recommendation(name1, name2, similarity),
             }
             suggestions.append(suggestion)
 
         return suggestions
 
-    def _get_merge_recommendation(
-        self, name1: str, name2: str, similarity: float
-    ) -> str:
+    def _get_merge_recommendation(self, name1: str, name2: str, similarity: float) -> str:
         """Generate merge recommendation based on lesson names and similarity.
 
         Args:
@@ -945,11 +926,11 @@ class LessonEmbedder:
             Human-readable merge recommendation string
         """
         if similarity >= 0.90:
-            return f"STRONG DUPLICATE: Consider merging '{name1}' and '{name2}' - very high similarity"
-        elif similarity >= 0.80:
             return (
-                f"LIKELY DUPLICATE: Review '{name1}' and '{name2}' for potential merge"
+                f"STRONG DUPLICATE: Consider merging '{name1}' and '{name2}' - very high similarity"
             )
+        elif similarity >= 0.80:
+            return f"LIKELY DUPLICATE: Review '{name1}' and '{name2}' for potential merge"
         elif similarity >= 0.70:
             return f"RELATED: '{name1}' and '{name2}' cover similar topics, consider consolidation"
         else:
@@ -1078,18 +1059,12 @@ class LessonEmbedder:
 
         # High threshold (0.85-1.0)
         high_duplicates = self.find_duplicates(threshold=duplicate_threshold)
-        print(
-            f"  Potential Duplicates (>{duplicate_threshold:.2f}): {len(high_duplicates)} pairs"
-        )
+        print(f"  Potential Duplicates (>{duplicate_threshold:.2f}): {len(high_duplicates)} pairs")
 
         # Medium-high (0.75-0.85)
         all_75_plus = self.find_duplicates(threshold=0.75, min_similarity=0.75)
-        medium_high = [
-            d for d in all_75_plus if d[2] < duplicate_threshold
-        ]  # d[2] is similarity
-        print(
-            f"  High Similarity (0.75-{duplicate_threshold:.2f}): {len(medium_high)} pairs"
-        )
+        medium_high = [d for d in all_75_plus if d[2] < duplicate_threshold]  # d[2] is similarity
+        print(f"  High Similarity (0.75-{duplicate_threshold:.2f}): {len(medium_high)} pairs")
 
         # Medium (0.65-0.75)
         all_65_plus = self.find_duplicates(threshold=0.65, min_similarity=0.65)
@@ -1111,9 +1086,7 @@ class LessonEmbedder:
 
         # 4. Top merge candidates
         print(f"📝 Top Merge Candidates (showing top {show_top_merges}):")
-        suggestions = self.suggest_merges(
-            threshold=0.70
-        )  # Lower threshold for suggestions
+        suggestions = self.suggest_merges(threshold=0.70)  # Lower threshold for suggestions
 
         if not suggestions:
             print("  No merge suggestions found.\n")
@@ -1135,24 +1108,16 @@ class LessonEmbedder:
         lessons_to_merge = merge_candidates * 2  # Each pair represents 2 lessons
 
         print(f"  Current Lessons: {total_lessons}")
-        print(
-            f"  Merge Candidates: {merge_candidates} pairs ({lessons_to_merge} lessons)"
-        )
+        print(f"  Merge Candidates: {merge_candidates} pairs ({lessons_to_merge} lessons)")
 
         if merge_candidates > 0:
-            potential_after = (
-                total_lessons - merge_candidates
-            )  # Each merge reduces by 1
+            potential_after = total_lessons - merge_candidates  # Each merge reduces by 1
             reduction_pct = (merge_candidates / total_lessons) * 100
             tokens_per_lesson = 100  # Rough estimate
             token_savings = merge_candidates * tokens_per_lesson
 
-            print(
-                f"  After Consolidation: ~{potential_after} lessons (-{reduction_pct:.1f}%)"
-            )
-            print(
-                f"  Estimated Token Savings: ~{token_savings} tokens per context load"
-            )
+            print(f"  After Consolidation: ~{potential_after} lessons (-{reduction_pct:.1f}%)")
+            print(f"  Estimated Token Savings: ~{token_savings} tokens per context load")
         else:
             print("  No consolidation opportunities identified.")
 
@@ -1164,12 +1129,8 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to run")
 
     # Generate command
-    gen_parser = subparsers.add_parser(
-        "generate", help="Generate embeddings for all lessons"
-    )
-    gen_parser.add_argument(
-        "--force", action="store_true", help="Regenerate even if unchanged"
-    )
+    gen_parser = subparsers.add_parser("generate", help="Generate embeddings for all lessons")
+    gen_parser.add_argument("--force", action="store_true", help="Regenerate even if unchanged")
 
     # Update command
     subparsers.add_parser("update", help="Update embeddings for changed lessons")
@@ -1179,9 +1140,7 @@ def main():
 
     # Similar command
     sim_parser = subparsers.add_parser("similar", help="Find similar lessons")
-    sim_parser.add_argument(
-        "--lesson-id", required=True, help="Lesson ID to find similar to"
-    )
+    sim_parser.add_argument("--lesson-id", required=True, help="Lesson ID to find similar to")
     sim_parser.add_argument("--top-k", type=int, default=5, help="Number of results")
 
     # Search command
@@ -1193,9 +1152,7 @@ def main():
     subparsers.add_parser("list", help="List all embedded lessons")
 
     # Duplicates command
-    dup_parser = subparsers.add_parser(
-        "duplicates", help="Find potential duplicate lessons"
-    )
+    dup_parser = subparsers.add_parser("duplicates", help="Find potential duplicate lessons")
     dup_parser.add_argument(
         "--threshold",
         type=float,
@@ -1210,9 +1167,7 @@ def main():
     )
 
     # Cluster command
-    cluster_parser = subparsers.add_parser(
-        "cluster", help="Cluster lessons by similarity"
-    )
+    cluster_parser = subparsers.add_parser("cluster", help="Cluster lessons by similarity")
     cluster_parser.add_argument(
         "--threshold",
         type=float,
@@ -1234,9 +1189,7 @@ def main():
     )
 
     # Suggest-merges command
-    merge_parser = subparsers.add_parser(
-        "suggest-merges", help="Suggest merging duplicate lessons"
-    )
+    merge_parser = subparsers.add_parser("suggest-merges", help="Suggest merging duplicate lessons")
     merge_parser.add_argument(
         "--threshold",
         type=float,
@@ -1343,9 +1296,7 @@ def main():
             print(f"\n✅ No similar lessons found above threshold {args.threshold}")
             print("Safe to create new lesson.")
         else:
-            print(
-                f"\n⚠️ Found {len(results)} similar lesson(s) above threshold {args.threshold}:\n"
-            )
+            print(f"\n⚠️ Found {len(results)} similar lesson(s) above threshold {args.threshold}:\n")
             for lesson_id, similarity in results[:5]:  # Show top 5
                 meta = embedder.metadata[lesson_id]
                 print(f"  {lesson_id}")
@@ -1362,9 +1313,7 @@ def main():
         else:
             print(f"\n📋 Merge Suggestions (threshold={args.threshold}):\n")
             for i, suggestion in enumerate(suggestions, 1):
-                print(
-                    f"{i}. {suggestion['lesson1']['name']} ↔ {suggestion['lesson2']['name']}"
-                )
+                print(f"{i}. {suggestion['lesson1']['name']} ↔ {suggestion['lesson2']['name']}")
                 print(f"   Similarity: {suggestion['similarity']:.3f}")
                 print(f"   {suggestion['recommendation']}")
                 print("   Paths:")

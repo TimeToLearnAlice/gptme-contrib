@@ -5,7 +5,6 @@ They require API keys to be set in environment variables.
 """
 
 import pytest
-
 from gptme_imagen.tools.image_gen import ImageResult, generate_image
 
 
@@ -117,9 +116,7 @@ class TestImageGenIntegration:
         """Test metadata includes all expected fields for DALL-E."""
         output_path = tmp_path / "test_metadata_dalle.png"
 
-        result = generate_image(
-            prompt="Test image", provider="dalle", output_path=str(output_path)
-        )
+        result = generate_image(prompt="Test image", provider="dalle", output_path=str(output_path))
 
         # Check metadata exists and has expected structure
         assert hasattr(result, "metadata")

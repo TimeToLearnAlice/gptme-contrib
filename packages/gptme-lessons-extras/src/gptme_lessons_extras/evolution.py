@@ -179,9 +179,7 @@ class EvolutionTracker:
         # Load existing history or create new
         history = self.load_history(lesson_id)
         if not history:
-            raise ValueError(
-                f"No history found for lesson {lesson_id}. Initialize first."
-            )
+            raise ValueError(f"No history found for lesson {lesson_id}. Initialize first.")
 
         # Create new version
         latest = history.latest_version()
@@ -324,9 +322,7 @@ class EvolutionTracker:
                 for version in history.versions:
                     if version.contributor == contributor:
                         stats[contributor]["versions_contributed"] += 1
-                        stats[contributor]["lessons_contributed_to"].add(
-                            history.lesson_id
-                        )
+                        stats[contributor]["lessons_contributed_to"].add(history.lesson_id)
 
         # Convert sets to counts
         for contributor in stats:
@@ -347,9 +343,7 @@ def main():
         print("  init <lesson-id> <agent-id> <content-file>  - Initialize tracking")
         print("  track <lesson-id> <agent-id> <changes> <content-file>  - Track change")
         print("  history <lesson-id>  - Show version history")
-        print(
-            "  suggest <lesson-id> <agent-id> <category> <suggestion>  - Suggest refinement"
-        )
+        print("  suggest <lesson-id> <agent-id> <category> <suggestion>  - Suggest refinement")
         print("  refinements <lesson-id>  - Show refinement suggestions")
         print("  stats  - Show contributor statistics")
         return
@@ -391,9 +385,7 @@ def main():
 
     elif command == "suggest":
         lesson_id, agent_id, category, suggestion = sys.argv[2:6]
-        refinement = tracker.suggest_refinement(
-            lesson_id, agent_id, category, suggestion
-        )
+        refinement = tracker.suggest_refinement(lesson_id, agent_id, category, suggestion)
         print(f"Suggested refinement for {lesson_id}")
         print(f"Category: {refinement.category}")
         print(f"Priority: {refinement.priority}")

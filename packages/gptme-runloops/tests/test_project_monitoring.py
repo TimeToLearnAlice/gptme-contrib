@@ -4,7 +4,6 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from gptme_runloops.project_monitoring import ProjectMonitoringRun, WorkItem
 
 
@@ -38,9 +37,7 @@ def test_project_monitoring_init(workspace):
 
 def test_project_monitoring_custom_org(workspace):
     """Test ProjectMonitoringRun with custom organization."""
-    run = ProjectMonitoringRun(
-        workspace, target_orgs=["custom-org"], author="custom-author"
-    )
+    run = ProjectMonitoringRun(workspace, target_orgs=["custom-org"], author="custom-author")
 
     assert run.target_orgs == ["custom-org"]
     assert run.author == "custom-author"

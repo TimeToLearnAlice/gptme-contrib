@@ -1,9 +1,9 @@
 """Message header parsing and formatting utilities."""
 
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Dict, List, Optional
-import uuid
 
 
 @dataclass

@@ -17,14 +17,12 @@ Combines functionality from:
 - scripts/lesson-checker.py (length checks, companion doc validation)
 """
 
-import sys
-
 import re
+import sys
 from pathlib import Path
 from typing import List, Optional, Tuple
 
 import yaml
-
 
 # Configuration
 TARGET_LENGTH = 100  # lines (soft target for primary lessons)
@@ -102,9 +100,7 @@ class LessonValidator:
         """
         # Check for two-file format indicators
         has_detection = bool(
-            re.search(
-                r"^##\s+Detection\s*$", self.content, re.MULTILINE | re.IGNORECASE
-            )
+            re.search(r"^##\s+Detection\s*$", self.content, re.MULTILINE | re.IGNORECASE)
         )
         has_pattern = bool(
             re.search(r"^##\s+Pattern\s*$", self.content, re.MULTILINE | re.IGNORECASE)
@@ -335,9 +331,7 @@ class LessonValidator:
 
         # Count list items (lines starting with -, *, or numbers with .)
         # Matches: "- item", "* item", or "1. item", "1) item"
-        signals = re.findall(
-            r"^\s*(?:[-*]|\d+[.)])\s+.+$", signals_content, re.MULTILINE
-        )
+        signals = re.findall(r"^\s*(?:[-*]|\d+[.)])\s+.+$", signals_content, re.MULTILINE)
 
         if len(signals) < self.MIN_FAILURE_SIGNALS:
             self.errors.append(
@@ -360,9 +354,7 @@ class LessonValidator:
         checklist_content = checklist_match.group(1)
 
         # Count checkbox items (lines with - [ ])
-        checklist_items = re.findall(
-            r"^\s*[-*]\s+\[[ x]\]\s+.+$", checklist_content, re.MULTILINE
-        )
+        checklist_items = re.findall(r"^\s*[-*]\s+\[[ x]\]\s+.+$", checklist_content, re.MULTILINE)
 
         if len(checklist_items) < self.MIN_VERIFICATION_ITEMS:
             self.errors.append(
@@ -412,9 +404,7 @@ class LessonValidator:
         format_label = "two-file" if self.format_type == "two-file" else "original"
 
         if self.errors:
-            print(
-                f"❌ Validation failed for {self.filepath.name} ({format_label} format)\n"
-            )
+            print(f"❌ Validation failed for {self.filepath.name} ({format_label} format)\n")
             print("Errors:")
             for error in self.errors:
                 print(f"  - {error}")

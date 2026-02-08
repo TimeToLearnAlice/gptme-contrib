@@ -13,12 +13,12 @@ import json
 import logging
 import os
 import sys
-import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, List, Dict
+from typing import Dict, List, Optional
 
 import click
+import tomllib
 from dotenv import load_dotenv
 from exa_py import Exa
 from rich.console import Console
@@ -68,9 +68,7 @@ class ExaSearch:
             f"Exa API key not found. Set EXA_API_KEY environment variable or add 'EXA_API_KEY' to the env section in {config_path}"
         )
 
-    def search(
-        self, query: str, text: bool = True, num_results: int = 10
-    ) -> SearchResult:
+    def search(self, query: str, text: bool = True, num_results: int = 10) -> SearchResult:
         """
         Search using Exa API
 
@@ -121,19 +119,19 @@ class ExaSearch:
 
             # Safe attribute access
             if hasattr(result, "title"):
-                title = getattr(result, "title")
+                title = result.title
                 if isinstance(title, str):
                     source["title"] = title
             if hasattr(result, "url"):
-                url = getattr(result, "url")
+                url = result.url
                 if isinstance(url, str):
                     source["url"] = url
             if hasattr(result, "text"):
-                text_content = getattr(result, "text")
+                text_content = result.text
                 if isinstance(text_content, str):
                     source["content_snippet"] = text_content
             elif hasattr(result, "content"):
-                content = getattr(result, "content")
+                content = result.content
                 if isinstance(content, str):
                     source["content_snippet"] = content
 
@@ -144,11 +142,11 @@ class ExaSearch:
         """Extract answer text from response object"""
         # Handle different response types safely
         if hasattr(response, "answer"):
-            answer = getattr(response, "answer")
+            answer = response.answer
             if isinstance(answer, str):
                 return answer
         elif hasattr(response, "text"):
-            text_content = getattr(response, "text")
+            text_content = response.text
             if isinstance(text_content, str):
                 return text_content
         elif isinstance(response, str):

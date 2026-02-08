@@ -9,9 +9,8 @@ import logging
 import os
 from typing import Any
 
-
 from .embedder import LessonEmbedder
-from .hybrid_retriever import HybridLessonMatcher, HybridConfig
+from .hybrid_retriever import HybridConfig, HybridLessonMatcher
 from .retrieval_analytics import RetrievalTracker
 
 logger = logging.getLogger(__name__)
@@ -95,9 +94,7 @@ class GptmeHybridMatcher:
 
         return results
 
-    def _hybrid_match(
-        self, lessons: list[Any], context: Any, threshold: float
-    ) -> list[Any]:
+    def _hybrid_match(self, lessons: list[Any], context: Any, threshold: float) -> list[Any]:
         """
         Perform hybrid retrieval matching.
 
@@ -138,9 +135,7 @@ class GptmeHybridMatcher:
         for score, lesson in scored_lessons:
             if score >= threshold:
                 matched_by = [f"hybrid:{score:.2f}"]
-                gptme_results.append(
-                    self._create_match_result(lesson, score, matched_by)
-                )
+                gptme_results.append(self._create_match_result(lesson, score, matched_by))
 
         return gptme_results
 
@@ -165,10 +160,7 @@ class GptmeHybridMatcher:
         for result in results:
             # Safely access lesson ID with multiple fallbacks
             lesson_id = "unknown"
-            if (
-                hasattr(result.lesson, "metadata")
-                and result.lesson.metadata is not None
-            ):
+            if hasattr(result.lesson, "metadata") and result.lesson.metadata is not None:
                 lesson_id = (
                     getattr(result.lesson.metadata, "id", None)
                     or getattr(result.lesson.metadata, "lesson_id", None)
@@ -194,9 +186,7 @@ class GptmeHybridMatcher:
             token_count=None,  # Could add token counting later
         )
 
-    def _keyword_fallback(
-        self, lessons: list[Any], context: Any, threshold: float
-    ) -> list[Any]:
+    def _keyword_fallback(self, lessons: list[Any], context: Any, threshold: float) -> list[Any]:
         """
         Fallback to keyword-only matching when hybrid unavailable.
 
@@ -229,9 +219,7 @@ class GptmeHybridMatcher:
         results.sort(key=lambda r: r.score, reverse=True)
         return results
 
-    def _create_match_result(
-        self, lesson: Any, score: float, matched_by: list[str]
-    ) -> Any:
+    def _create_match_result(self, lesson: Any, score: float, matched_by: list[str]) -> Any:
         """
         Create gptme MatchResult from components.
 
@@ -260,9 +248,7 @@ class GptmeHybridMatcher:
                 score: float
                 matched_by: list[str]
 
-            return FallbackMatchResult(
-                lesson=lesson, score=score, matched_by=matched_by
-            )
+            return FallbackMatchResult(lesson=lesson, score=score, matched_by=matched_by)
 
     def match_keywords(self, lessons: list[Any], keywords: list[str]) -> list[Any]:
         """

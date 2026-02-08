@@ -75,9 +75,7 @@ class GitHubInputSource(InputSource):
                 source_id=f"issue-{issue['number']}",
                 title=issue["title"],
                 description=issue.get("body", ""),
-                created_at=datetime.fromisoformat(
-                    issue["createdAt"].replace("Z", "+00:00")
-                ),
+                created_at=datetime.fromisoformat(issue["createdAt"].replace("Z", "+00:00")),
                 author=issue["author"]["login"] if issue.get("author") else None,
                 priority=priority,
                 tags=tags,
@@ -168,9 +166,7 @@ class GitHubInputSource(InputSource):
                 task_id=task_filename.replace(".md", ""),
             )
         except Exception as e:
-            return TaskCreationResult(
-                success=False, error=f"Failed to write task file: {e}"
-            )
+            return TaskCreationResult(success=False, error=f"Failed to write task file: {e}")
 
     def _generate_task_filename(self, title: str) -> str:
         """Generate task filename from title.
@@ -248,8 +244,7 @@ class GitHubInputSource(InputSource):
             return
 
         comment = (
-            "✅ Task created from this issue.\n\n"
-            "I'll work on this and update when complete."
+            "✅ Task created from this issue.\n\n" "I'll work on this and update when complete."
         )
 
         try:
@@ -468,9 +463,7 @@ class EmailInputSource(InputSource):
                 task_id=task_filename.replace(".md", ""),
             )
         except Exception as e:
-            return TaskCreationResult(
-                success=False, error=f"Failed to write task file: {e}"
-            )
+            return TaskCreationResult(success=False, error=f"Failed to write task file: {e}")
 
     def _generate_task_filename(self, title: str) -> str:
         """Generate task filename from email subject."""
@@ -661,9 +654,7 @@ class WebhookInputSource(InputSource):
                 task_id=task_filename.replace(".md", ""),
             )
         except Exception as e:
-            return TaskCreationResult(
-                success=False, error=f"Failed to write task file: {e}"
-            )
+            return TaskCreationResult(success=False, error=f"Failed to write task file: {e}")
 
     def _generate_task_filename(self, title: str) -> str:
         """Generate task filename from webhook title."""
@@ -889,9 +880,7 @@ class SchedulerInputSource(InputSource):
             # Run once per day at specified time
             # Use time window approach: check if current time >= scheduled time
             # and we haven't run since scheduled time
-            scheduled_time = current_time.replace(
-                hour=hour, minute=minute, second=0, microsecond=0
-            )
+            scheduled_time = current_time.replace(hour=hour, minute=minute, second=0, microsecond=0)
             if current_time >= scheduled_time:
                 # Check if already run since scheduled time today
                 if (
@@ -980,9 +969,7 @@ class SchedulerInputSource(InputSource):
             Dictionary of task states
         """
         state_file = Path(
-            self.config.get(
-                "state_file_path", "~/.local/share/gptme-agent/schedule-state.json"
-            )
+            self.config.get("state_file_path", "~/.local/share/gptme-agent/schedule-state.json")
         ).expanduser()
 
         if not state_file.exists():
@@ -1001,9 +988,7 @@ class SchedulerInputSource(InputSource):
             state: Dictionary of task states to save
         """
         state_file = Path(
-            self.config.get(
-                "state_file_path", "~/.local/share/gptme-agent/schedule-state.json"
-            )
+            self.config.get("state_file_path", "~/.local/share/gptme-agent/schedule-state.json")
         ).expanduser()
 
         state_file.parent.mkdir(parents=True, exist_ok=True)
@@ -1045,9 +1030,7 @@ class SchedulerInputSource(InputSource):
                 task_id=task_filename.replace(".md", ""),
             )
         except Exception as e:
-            return TaskCreationResult(
-                success=False, error=f"Failed to write task file: {e}"
-            )
+            return TaskCreationResult(success=False, error=f"Failed to write task file: {e}")
 
     def _generate_task_filename(self, title: str) -> str:
         """Generate task filename from scheduled task title."""

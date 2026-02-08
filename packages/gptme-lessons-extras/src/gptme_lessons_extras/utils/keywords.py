@@ -137,8 +137,6 @@ def replace_placeholder_keywords(lesson_content: str, keywords: List[str]) -> st
     pattern = r"(---\s*\nmatch:\s*\nkeywords:\s*)\[keyword1, keyword2, keyword3\]"
     replacement = r"\1[" + ", ".join(keywords) + "]"
 
-    updated_content = re.sub(
-        pattern, replacement, lesson_content, count=1, flags=re.MULTILINE
-    )
+    updated_content = re.sub(pattern, replacement, lesson_content, count=1, flags=re.MULTILINE)
 
     return updated_content

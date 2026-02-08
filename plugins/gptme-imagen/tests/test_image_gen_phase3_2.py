@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from gptme_imagen.tools.image_gen import (
     ImageResult,
     batch_generate,
@@ -53,9 +52,7 @@ class TestBatchGenerate:
                 for prompt in prompts
             ]
 
-            results = batch_generate(
-                prompts=prompts, provider="gemini", output_dir=output_dir
-            )
+            results = batch_generate(prompts=prompts, provider="gemini", output_dir=output_dir)
 
             # Verify output directory would be created
             assert Path(output_dir).exists()
@@ -140,12 +137,8 @@ class TestCompareProviders:
                 metadata={},
             )
 
-        with patch(
-            "gptme_imagen.tools.image_gen.generate_image", side_effect=mock_generate
-        ):
-            results = compare_providers(
-                prompt="test", providers=["gemini", "dalle"], view=False
-            )
+        with patch("gptme_imagen.tools.image_gen.generate_image", side_effect=mock_generate):
+            results = compare_providers(prompt="test", providers=["gemini", "dalle"], view=False)
 
             # Should still get dalle result even though gemini failed
             assert len(results) == 1
@@ -180,13 +173,9 @@ class TestGenerateVariation:
         with patch("openai.OpenAI") as mock_client:
             with patch("requests.get") as mock_get:
                 mock_get.return_value.content = b"generated image data"
-                mock_client.return_value.images.create_variation.return_value = (
-                    mock_response
-                )
+                mock_client.return_value.images.create_variation.return_value = mock_response
 
-                result = generate_variation(
-                    image_path=str(test_image), provider="dalle2", count=1
-                )
+                result = generate_variation(image_path=str(test_image), provider="dalle2", count=1)
 
                 # Should return single ImageResult
                 assert isinstance(result, ImageResult)
@@ -204,13 +193,9 @@ class TestGenerateVariation:
         with patch("openai.OpenAI") as mock_client:
             with patch("requests.get") as mock_get:
                 mock_get.return_value.content = b"generated image data"
-                mock_client.return_value.images.create_variation.return_value = (
-                    mock_response
-                )
+                mock_client.return_value.images.create_variation.return_value = mock_response
 
-                results = generate_variation(
-                    image_path=str(test_image), provider="dalle2", count=3
-                )
+                results = generate_variation(image_path=str(test_image), provider="dalle2", count=3)
 
                 # Should return list of ImageResults
                 assert isinstance(results, list)

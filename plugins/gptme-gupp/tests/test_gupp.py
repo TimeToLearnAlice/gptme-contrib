@@ -48,9 +48,7 @@ def test_hook_update(hooks_dir):
     hook_start("test-task", "Initial context", "Initial action")
 
     # Update it
-    result = hook_update(
-        "test-task", current_step="Step 2", next_action="Updated action"
-    )
+    result = hook_update("test-task", current_step="Step 2", next_action="Updated action")
 
     assert "✅ Hook updated: test-task" in result
 

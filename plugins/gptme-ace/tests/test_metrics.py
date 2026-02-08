@@ -5,7 +5,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import pytest
-
 from gptme_ace.metrics import (
     CurationRun,
     InsightQuality,
@@ -33,9 +32,7 @@ class TestMetricsDB:
 
         with sqlite3.connect(temp_db.db_path) as conn:
             # Check tables exist
-            tables = conn.execute(
-                "SELECT name FROM sqlite_master WHERE type='table'"
-            ).fetchall()
+            tables = conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()
             table_names = [t[0] for t in tables]
 
             assert "curation_runs" in table_names

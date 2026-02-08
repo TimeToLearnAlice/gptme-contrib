@@ -187,9 +187,7 @@ class MetricsCalculator:
         """
         self.tracker = tracker
 
-    def compute_precision(
-        self, method: Literal["keyword", "hybrid"] | None = None
-    ) -> float:
+    def compute_precision(self, method: Literal["keyword", "hybrid"] | None = None) -> float:
         """Compute precision: helpful lessons / total included.
 
         Args:
@@ -218,9 +216,7 @@ class MetricsCalculator:
                 if not lesson_id:
                     continue
 
-                feedback = self.tracker.get_feedback(
-                    session_id=session_id, lesson_id=lesson_id
-                )
+                feedback = self.tracker.get_feedback(session_id=session_id, lesson_id=lesson_id)
                 helpful_count += sum(1 for f in feedback if f["helpful"])
 
         return helpful_count / total_included if total_included > 0 else 0.0
@@ -282,9 +278,7 @@ class MetricsCalculator:
                     counts["no_feedback"] += 1
                     continue
 
-                feedback = self.tracker.get_feedback(
-                    session_id=session_id, lesson_id=lesson_id
-                )
+                feedback = self.tracker.get_feedback(session_id=session_id, lesson_id=lesson_id)
 
                 if not feedback:
                     counts["no_feedback"] += 1
@@ -368,12 +362,8 @@ class ABTestHarness:
             "overlap": len(keyword_top & hybrid_top),
             "keyword_only": list(keyword_top - hybrid_top),
             "hybrid_only": list(hybrid_top - keyword_top),
-            "keyword_scores": [
-                lesson.get("score", 0.0) for lesson in lessons_keyword[:top_n]
-            ],
-            "hybrid_scores": [
-                lesson.get("score", 0.0) for lesson in lessons_hybrid[:top_n]
-            ],
+            "keyword_scores": [lesson.get("score", 0.0) for lesson in lessons_keyword[:top_n]],
+            "hybrid_scores": [lesson.get("score", 0.0) for lesson in lessons_hybrid[:top_n]],
         }
 
     def aggregate_results(self, comparisons: list[dict[str, Any]]) -> dict[str, Any]:
@@ -470,17 +460,13 @@ class AnalyticsDashboard:
             Formatted trends string
         """
         # Get all feedback sorted by time
-        all_feedback = sorted(
-            self.calculator.tracker.get_feedback(), key=lambda f: f["timestamp"]
-        )
+        all_feedback = sorted(self.calculator.tracker.get_feedback(), key=lambda f: f["timestamp"])
 
         if not all_feedback:
             return "# Effectiveness Trends\n\nNo feedback data available."
 
         # Group by day
-        daily: dict[str, dict[str, int]] = defaultdict(
-            lambda: {"helpful": 0, "harmful": 0}
-        )
+        daily: dict[str, dict[str, int]] = defaultdict(lambda: {"helpful": 0, "harmful": 0})
         for f in all_feedback:
             day = datetime.fromtimestamp(f["timestamp"]).strftime("%Y-%m-%d")
             if f["helpful"]:
@@ -493,8 +479,6 @@ class AnalyticsDashboard:
             counts = daily[day]
             total = counts["helpful"] + counts["harmful"]
             precision = counts["helpful"] / total if total > 0 else 0.0
-            lines.append(
-                f"{day}: {counts['helpful']}/{total} helpful ({precision:.1%})"
-            )
+            lines.append(f"{day}: {counts['helpful']}/{total} helpful ({precision:.1%})")
 
         return "\n".join(lines)

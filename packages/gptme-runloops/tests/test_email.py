@@ -3,7 +3,6 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from gptme_runloops.email import EmailRun
 
 
@@ -67,9 +66,7 @@ def test_has_work_with_emails(mock_run, workspace):
     def side_effect(*args, **kwargs):
         cmd = args[0] if args else kwargs.get("args", [])
         if "check-unreplied" in str(cmd):
-            return MagicMock(
-                returncode=1, stdout="email1@example.com: Subject line", stderr=""
-            )
+            return MagicMock(returncode=1, stdout="email1@example.com: Subject line", stderr="")
         return MagicMock(returncode=0, stdout="", stderr="")
 
     mock_run.side_effect = side_effect

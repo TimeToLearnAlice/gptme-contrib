@@ -10,14 +10,12 @@ Usage:
     ./scripts/lessons/import.py --lesson network-lessons/workflow/autonomous-run.md --adopt
 """
 
-import sys
-
 import argparse
+import sys
 from pathlib import Path
 from typing import Optional
 
 import yaml
-
 
 from gptme_lessons_extras.network_schema import validate_network_metadata
 
@@ -230,9 +228,7 @@ def adopt_network_lesson(
         local_path.write_text(reconstructed)
 
         # Update adoption count in network metadata
-        network_metadata["adoption_count"] = (
-            network_metadata.get("adoption_count", 0) + 1
-        )
+        network_metadata["adoption_count"] = network_metadata.get("adoption_count", 0) + 1
 
         print(f"✓ Adopted: {lesson_id} → {local_path}")
 
@@ -315,9 +311,7 @@ def main():
                 print(f"    ID: {review['metadata'].get('lesson_id')}")
                 print(f"    Origin: {review['metadata'].get('agent_origin')}")
                 print(f"    Confidence: {review['metadata'].get('confidence')}")
-                print(
-                    f"    Adoption count: {review['metadata'].get('adoption_count', 0)}"
-                )
+                print(f"    Adoption count: {review['metadata'].get('adoption_count', 0)}")
 
             if review["content_preview"]:
                 print(f"\n  Preview: {review['content_preview']}...")

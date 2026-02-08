@@ -63,9 +63,7 @@ def cmd_breakdown(metrics: MetricsCollector, args) -> None:
 
     print("\nOperation Breakdown")
     print("=" * 60)
-    print(
-        f"{'Operation':<30} {'Total':<8} {'Success':<8} {'Failed':<8} {'Avg Duration':<12}"
-    )
+    print(f"{'Operation':<30} {'Total':<8} {'Success':<8} {'Failed':<8} {'Avg Duration':<12}")
     print("-" * 60)
 
     for operation, stats in sorted(breakdown.items()):

@@ -271,9 +271,7 @@ class DeltaReviewer:
 
         elif criterion.name == "format_compliance":
             # Check operation structure
-            valid_ops = all(
-                op.get("type") in ["ADD", "REMOVE", "MODIFY"] for op in operations
-            )
+            valid_ops = all(op.get("type") in ["ADD", "REMOVE", "MODIFY"] for op in operations)
             if valid_ops and all(op.get("section") for op in operations):
                 result.score = 0.9
                 result.feedback = "Operations follow format guidelines"
@@ -346,9 +344,7 @@ class DeltaReviewer:
                 suggestions.append(f"Improve {c.name}: {c.feedback}")
 
         # Generate summary
-        summary = self._generate_summary(
-            delta, evaluated_criteria, overall_score, decision
-        )
+        summary = self._generate_summary(delta, evaluated_criteria, overall_score, decision)
 
         result = ReviewResult(
             delta_id=delta_id,
@@ -384,14 +380,10 @@ class DeltaReviewer:
         ]
 
         if high_scores:
-            summary_parts.append(
-                f"Strengths: {', '.join(c.name for c in high_scores)}."
-            )
+            summary_parts.append(f"Strengths: {', '.join(c.name for c in high_scores)}.")
 
         if low_scores:
-            summary_parts.append(
-                f"Areas for improvement: {', '.join(c.name for c in low_scores)}."
-            )
+            summary_parts.append(f"Areas for improvement: {', '.join(c.name for c in low_scores)}.")
 
         return " ".join(summary_parts)
 
@@ -536,24 +528,16 @@ class DeltaReviewer:
         pending_count = len(self.list_pending_deltas())
 
         approved_dir = self.delta_dir / "approved"
-        approved_count = (
-            len(list(approved_dir.glob("*.json"))) if approved_dir.exists() else 0
-        )
+        approved_count = len(list(approved_dir.glob("*.json"))) if approved_dir.exists() else 0
 
         rejected_dir = self.delta_dir / "rejected"
-        rejected_count = (
-            len(list(rejected_dir.glob("*.json"))) if rejected_dir.exists() else 0
-        )
+        rejected_count = len(list(rejected_dir.glob("*.json"))) if rejected_dir.exists() else 0
 
         applied_dir = self.delta_dir / "applied"
-        applied_count = (
-            len(list(applied_dir.glob("*.json"))) if applied_dir.exists() else 0
-        )
+        applied_count = len(list(applied_dir.glob("*.json"))) if applied_dir.exists() else 0
 
         reviews_count = (
-            len(list(self.reviews_dir.glob("*_review.json")))
-            if self.reviews_dir.exists()
-            else 0
+            len(list(self.reviews_dir.glob("*_review.json"))) if self.reviews_dir.exists() else 0
         )
 
         return {
@@ -577,9 +561,7 @@ def main():
     # Review command
     review_parser = subparsers.add_parser("review", help="Review a single delta")
     review_parser.add_argument("--delta-id", required=True, help="Delta ID to review")
-    review_parser.add_argument(
-        "--reviewer", default="ace_reviewer", help="Reviewer name"
-    )
+    review_parser.add_argument("--reviewer", default="ace_reviewer", help="Reviewer name")
     review_parser.add_argument(
         "--auto-approve",
         action="store_true",
@@ -594,9 +576,7 @@ def main():
         action="store_true",
         help="Automatically approve/reject based on score",
     )
-    batch_parser.add_argument(
-        "--reviewer", default="ace_reviewer", help="Reviewer name"
-    )
+    batch_parser.add_argument("--reviewer", default="ace_reviewer", help="Reviewer name")
 
     # Status command
     subparsers.add_parser("status", help="Show delta status summary")
@@ -628,9 +608,7 @@ def main():
 
     elif args.command == "batch":
         if not args.all:
-            print(
-                "Error: batch command requires --all flag to review all pending deltas"
-            )
+            print("Error: batch command requires --all flag to review all pending deltas")
             print("This prevents accidental batch operations.")
             print("Use: python -m gptme_ace.reviewer batch --all")
             sys.exit(1)

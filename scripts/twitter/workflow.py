@@ -28,7 +28,6 @@ Usage:
 # Import stdlib email.message BEFORE sys.path manipulation
 # This ensures the stdlib module is cached and not shadowed by any local directories
 import email.message  # noqa: F401
-
 import sys
 from pathlib import Path as _Path
 
@@ -55,10 +54,12 @@ from typing import (
 
 import click
 import yaml
+
+# Import monitoring utilities
+from communication_utils.monitoring import MetricsCollector, get_logger
 from gptme.init import init as init_gptme
 from rich.console import Console
 from rich.prompt import Confirm, Prompt
-
 from twitter.llm import (
     EvaluationResponse,
     TweetResponse,
@@ -66,9 +67,6 @@ from twitter.llm import (
     verify_draft,
 )
 from twitter.twitter import cached_get_me, load_twitter_client
-
-# Import monitoring utilities
-from communication_utils.monitoring import get_logger, MetricsCollector
 
 logger = get_logger(__name__, "twitter")
 metrics = MetricsCollector()
@@ -175,7 +173,7 @@ def load_from_cache(tweet_id: str) -> Tuple[Optional[dict], Optional[dict]]:
     if not cache_path.exists():
         return None, None
 
-    with open(cache_path, "r") as f:
+    with open(cache_path) as f:
         cache_data = json.load(f)
 
     return cache_data.get("evaluation"), cache_data.get("response")
@@ -209,9 +207,7 @@ class TweetDraft:
             "text": self.text,
             "type": self.type,
             "in_reply_to": self.in_reply_to,
-            "scheduled_time": (
-                self.scheduled_time.isoformat() if self.scheduled_time else None
-            ),
+            "scheduled_time": (self.scheduled_time.isoformat() if self.scheduled_time else None),
             "context": self.context,
             "created_at": self.created_at.isoformat(),
         }
@@ -433,18 +429,13 @@ def get_conversation_thread(
 
                 # Add users to our collection
                 if conversation.includes and "users" in conversation.includes:
-                    all_users.update(
-                        {user.id: user for user in conversation.includes["users"]}
-                    )
+                    all_users.update({user.id: user for user in conversation.includes["users"]})
             else:
                 # No data in this page
                 break
 
             # Check if there are more pages
-            if (
-                not hasattr(conversation, "meta")
-                or "next_token" not in conversation.meta
-            ):
+            if not hasattr(conversation, "meta") or "next_token" not in conversation.meta:
                 break
 
             next_token = conversation.meta["next_token"]
@@ -487,12 +478,8 @@ def get_conversation_thread(
                 "author": author_username,
                 "created_at": t.created_at.isoformat(),
                 "depth": depth,  # Add depth information for UI indentation
-                "replied_to_id": reply_structure.get(
-                    t.id
-                ),  # Which tweet this is replying to
-                "public_metrics": (
-                    t.public_metrics if hasattr(t, "public_metrics") else {}
-                ),
+                "replied_to_id": reply_structure.get(t.id),  # Which tweet this is replying to
+                "public_metrics": (t.public_metrics if hasattr(t, "public_metrics") else {}),
                 # Include referenced tweets if available
                 "referenced_tweets": [],
             }
@@ -507,9 +494,7 @@ def get_conversation_thread(
                             break
                     else:
                         # Tweet not found in the conversation
-                        logging.warning(
-                            f"Referenced tweet {ref.id} not found in conversation"
-                        )
+                        logging.warning(f"Referenced tweet {ref.id} not found in conversation")
                         continue
 
                     author = all_users.get(ref_tweet.author_id)
@@ -641,21 +626,15 @@ def list_drafts(status: str) -> List[Path]:
 )
 def cli(model: str | None = None) -> None:
     """Twitter Workflow Manager"""
-    init_gptme(
-        model=model, interactive=False, tool_allowlist=[], tool_format="markdown"
-    )
+    init_gptme(model=model, interactive=False, tool_allowlist=[], tool_format="markdown")
 
 
 @cli.command()
 @click.argument("text")
-@click.option(
-    "--type", default="tweet", type=click.Choice(["tweet", "reply", "thread"])
-)
+@click.option("--type", default="tweet", type=click.Choice(["tweet", "reply", "thread"]))
 @click.option("--reply-to", help="Tweet ID to reply to")
 @click.option("--schedule", help="Schedule time (ISO format)")
-def draft(
-    text: str, type: str, reply_to: Optional[str], schedule: Optional[str]
-) -> None:
+def draft(text: str, type: str, reply_to: Optional[str], schedule: Optional[str]) -> None:
     """Create a new tweet draft"""
     op = metrics.start_operation("draft_creation", "twitter")
 
@@ -767,9 +746,7 @@ def group_drafts_by_reply_target(drafts: list[Path]) -> dict[str | None, list[Pa
 @cli.command()
 @click.option("--auto-approve", is_flag=True, help="Automatically approve good drafts")
 @click.option("--show-context", is_flag=True, help="Show full context for each draft")
-@click.option(
-    "--dry-run", is_flag=True, help="Don't actually approve/reject, just show analysis"
-)
+@click.option("--dry-run", is_flag=True, help="Don't actually approve/reject, just show analysis")
 def review(auto_approve: bool, show_context: bool, dry_run: bool) -> None:
     """Review pending tweet drafts with LLM assistance"""
 
@@ -786,9 +763,7 @@ def review(auto_approve: bool, show_context: bool, dry_run: bool) -> None:
     for reply_target, group_paths in grouped_drafts.items():
         # If multiple drafts reply to same tweet, show warning
         if len(group_paths) > 1:
-            console.print(
-                f"\n[yellow]⚠ Warning: {len(group_paths)} drafts reply to same tweet!"
-            )
+            console.print(f"\n[yellow]⚠ Warning: {len(group_paths)} drafts reply to same tweet!")
             console.print(f"[yellow]Tweet ID: {reply_target}")
             console.print("[yellow]You can choose the best option or reject duplicates")
 
@@ -817,9 +792,7 @@ def review(auto_approve: bool, show_context: bool, dry_run: bool) -> None:
                         )
                         for dup_path in duplicates["approved"]:
                             dup_draft = TweetDraft.load(dup_path)
-                            console.print(
-                                f"[yellow]  - Approved: {dup_draft.text[:80]}..."
-                            )
+                            console.print(f"[yellow]  - Approved: {dup_draft.text[:80]}...")
                     console.print(
                         "[yellow]Consider rejecting this duplicate or editing to make it distinct\n"
                     )
@@ -921,9 +894,7 @@ def approve(draft_id: str) -> None:
 def reject(draft_id: str, reason: Optional[str]) -> None:
     """Reject a draft tweet by ID (works on both new and approved drafts)"""
     # Try to find draft in either new or approved directories
-    draft_path = find_draft(draft_id, "new", show_error=False) or find_draft(
-        draft_id, "approved"
-    )
+    draft_path = find_draft(draft_id, "new", show_error=False) or find_draft(draft_id, "approved")
     if not draft_path:
         return
 
@@ -945,9 +916,7 @@ def reject(draft_id: str, reason: Optional[str]) -> None:
 def edit(draft_id: str, new_text: str) -> None:
     """Edit a draft tweet by ID (works on both new and approved drafts)"""
     # Try to find draft in either new or approved directories
-    draft_path = find_draft(draft_id, "new", show_error=False) or find_draft(
-        draft_id, "approved"
-    )
+    draft_path = find_draft(draft_id, "new", show_error=False) or find_draft(draft_id, "approved")
     if not draft_path:
         return
 
@@ -1113,9 +1082,7 @@ def process_timeline_tweets(
             has_posted_reply = False
             for posted_file in POSTED_DIR.glob("*.yml"):
                 if tweet_id_str in posted_file.name:
-                    console.print(
-                        f"[yellow]Skip: Already replied to tweet {tweet_id_str}"
-                    )
+                    console.print(f"[yellow]Skip: Already replied to tweet {tweet_id_str}")
                     has_posted_reply = True
                     break
 
@@ -1128,9 +1095,7 @@ def process_timeline_tweets(
                 # Get author username safely for skip message
                 author_for_skip = user_lookup.get(tweet.author_id)
                 username_for_skip = (
-                    author_for_skip.username
-                    if author_for_skip
-                    else str(tweet.author_id)
+                    author_for_skip.username if author_for_skip else str(tweet.author_id)
                 )
                 console.print(f"[dim]Skip: {skip_reason} - @{username_for_skip}[/dim]")
                 tweets_skipped_prefilter += 1
@@ -1151,9 +1116,7 @@ def process_timeline_tweets(
                     "author_metrics": (
                         {
                             "followers": (
-                                author.public_metrics["followers_count"]
-                                if author
-                                else 0
+                                author.public_metrics["followers_count"] if author else 0
                             ),
                         }
                         if author
@@ -1165,9 +1128,7 @@ def process_timeline_tweets(
             # Try to get conversation thread context if this is a reply
             if hasattr(tweet, "conversation_id") and tweet.conversation_id:
                 try:
-                    thread_tweets = get_conversation_thread(
-                        client, tweet.conversation_id
-                    )
+                    thread_tweets = get_conversation_thread(client, tweet.conversation_id)
                     if thread_tweets:
                         # Add thread context at both the root level (for eval/response) and in context (for storage)
                         tweet_data["thread_context"] = thread_tweets
@@ -1191,21 +1152,13 @@ def process_timeline_tweets(
 
                 if cached_eval:
                     eval_result = EvaluationResponse.from_dict(cached_eval)
-                    console.print(
-                        f"[blue]Cached Evaluation: {eval_result.action.upper()}"
-                    )
-                    console.print(
-                        f"[blue]Cached Relevance: {eval_result.relevance}/100"
-                    )
+                    console.print(f"[blue]Cached Evaluation: {eval_result.action.upper()}")
+                    console.print(f"[blue]Cached Relevance: {eval_result.relevance}/100")
                     console.print(f"[blue]Cached Priority: {eval_result.priority}/100")
                 else:
                     eval_result = None
 
-                response = (
-                    TweetResponse.from_dict(cached_response)
-                    if cached_response
-                    else None
-                )
+                response = TweetResponse.from_dict(cached_response) if cached_response else None
             else:
                 # Process tweet and cache results
                 eval_result, response = process_tweet(tweet_data)
@@ -1236,9 +1189,7 @@ def process_timeline_tweets(
                 # Check draft limit before creating main draft
                 total_drafts = existing_drafts + drafts_generated
                 if max_drafts and total_drafts >= max_drafts:
-                    console.print(
-                        f"[yellow]Reached draft limit ({max_drafts}), stopping..."
-                    )
+                    console.print(f"[yellow]Reached draft limit ({max_drafts}), stopping...")
                     return drafts_generated
 
                 if not dry_run:
@@ -1269,22 +1220,14 @@ def process_timeline_tweets(
                         )
                         if not dry_run:
                             thread_path = save_draft(thread_draft, "new")
-                            console.print(
-                                f"[green]Created thread draft {i}: {thread_path}"
-                            )
+                            console.print(f"[green]Created thread draft {i}: {thread_path}")
                             drafts_generated += 1
                         else:
                             console.print(f"[yellow]Would create thread draft {i}:")
                             console.print(f"[white]{thread_draft.text}")
 
-                        if (
-                            not dry_run
-                            and max_drafts
-                            and drafts_generated >= max_drafts
-                        ):
-                            console.print(
-                                "[yellow]Reached maximum number of drafts, stopping..."
-                            )
+                        if not dry_run and max_drafts and drafts_generated >= max_drafts:
+                            console.print("[yellow]Reached maximum number of drafts, stopping...")
                             return drafts_generated
 
             if times and tweets_processed >= times:
@@ -1385,9 +1328,7 @@ def monitor(
 
             # Process tweets
             if dry_run:
-                console.print(
-                    "[yellow]DRY RUN: Processing tweets but not saving drafts"
-                )
+                console.print("[yellow]DRY RUN: Processing tweets but not saving drafts")
 
             process_timeline_tweets(
                 tweets.data,
@@ -1445,18 +1386,10 @@ def monitor(
     is_flag=True,
     help="Automatically approve drafts that pass all checks",
 )
-@click.option(
-    "--post-approved", is_flag=True, help="Post approved tweets after reviewing"
-)
-@click.option(
-    "--dry-run", is_flag=True, help="Don't actually save drafts or post tweets"
-)
-@click.option(
-    "--max-tweets", type=int, default=10, help="Maximum number of tweets to process"
-)
-@click.option(
-    "--max-drafts", type=int, default=5, help="Maximum number of drafts to generate"
-)
+@click.option("--post-approved", is_flag=True, help="Post approved tweets after reviewing")
+@click.option("--dry-run", is_flag=True, help="Don't actually save drafts or post tweets")
+@click.option("--max-tweets", type=int, default=10, help="Maximum number of tweets to process")
+@click.option("--max-drafts", type=int, default=5, help="Maximum number of drafts to generate")
 @click.option("--skip-mentions", is_flag=True, help="Skip processing of mentions")
 @click.option("--skip-timeline", is_flag=True, help="Skip processing of timeline")
 def auto(
@@ -1578,9 +1511,7 @@ def auto(
                 )
 
                 if dry_run:
-                    console.print(
-                        "[yellow]DRY RUN: Processing tweets but not saving drafts"
-                    )
+                    console.print("[yellow]DRY RUN: Processing tweets but not saving drafts")
 
                 drafts_from_timeline = process_timeline_tweets(
                     tweets.data[:remaining_tweets],
@@ -1687,9 +1618,7 @@ def auto(
                         console.print(f"[green]Posted tweet: {tweet_id}")
                         move_draft(path, "posted")
                     else:
-                        console.print(
-                            "[red]Error: No response data from tweet creation"
-                        )
+                        console.print("[red]Error: No response data from tweet creation")
                 except Exception as e:
                     console.print(f"[red]Error posting tweet: {e}")
 
@@ -1701,9 +1630,7 @@ def auto(
     console.print(f"Needs human review: {needs_review_count}")
 
     if needs_review_count > 0:
-        console.print(
-            "\n[yellow]Run the following command to review pending drafts:[/yellow]"
-        )
+        console.print("\n[yellow]Run the following command to review pending drafts:[/yellow]")
         console.print(f"[blue]{sys.argv[0]} review[/blue]")
 
 

@@ -86,9 +86,7 @@ def hook_start(
     hook_file.write_text(json.dumps(hook, indent=2))
     logger.info(f"Created hook: {task_id}")
 
-    return (
-        f"✅ Hook created: {task_id}\n   Priority: {priority}\n   Next: {next_action}"
-    )
+    return f"✅ Hook created: {task_id}\n   Priority: {priority}\n   Next: {next_action}"
 
 
 def hook_update(

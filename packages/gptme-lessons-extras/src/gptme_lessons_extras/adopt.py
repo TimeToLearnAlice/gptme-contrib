@@ -8,9 +8,8 @@ Provides tools to:
 - Track adoption metrics
 """
 
-import sys
-
 import json
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -75,7 +74,7 @@ def adopt_lesson(
         local_path.parent.mkdir(parents=True, exist_ok=True)
 
         # Read source content
-        with open(lesson_file, "r") as f:
+        with open(lesson_file) as f:
             content = f.read()
 
         # Parse frontmatter to update adoption_count
@@ -91,9 +90,7 @@ def adopt_lesson(
                 if "network" in metadata:
                     current_count = metadata["network"].get("adoption_count", 0)
                     metadata["network"]["adoption_count"] = current_count + 1
-                    metadata["network"]["updated"] = datetime.now(
-                        timezone.utc
-                    ).isoformat()
+                    metadata["network"]["updated"] = datetime.now(timezone.utc).isoformat()
 
                     # Reconstruct content with updated metadata
                     import io
@@ -122,9 +119,7 @@ def adopt_lesson(
         return False, f"Error adopting lesson: {e}"
 
 
-def record_adoption(
-    lesson_id: str, agent_origin: str, adopted_at: str, lessons_dir: Path
-) -> None:
+def record_adoption(lesson_id: str, agent_origin: str, adopted_at: str, lessons_dir: Path) -> None:
     """
     Record lesson adoption for metrics tracking.
 
@@ -139,7 +134,7 @@ def record_adoption(
 
     # Load existing metrics
     if metrics_file.exists():
-        with open(metrics_file, "r") as f:
+        with open(metrics_file) as f:
             metrics = json.load(f)
     else:
         metrics = {"adoptions": []}
@@ -223,7 +218,7 @@ def report_adoption_metrics(lessons_dir: Path) -> dict[str, Any]:
     if not metrics_file.exists():
         return {"total_adoptions": 0, "by_agent": {}, "recent": []}
 
-    with open(metrics_file, "r") as f:
+    with open(metrics_file) as f:
         data = json.load(f)
 
     adoptions = data.get("adoptions", [])
@@ -272,12 +267,8 @@ def main():
     batch_parser.add_argument(
         "--min-confidence", type=float, default=0.7, help="Minimum confidence threshold"
     )
-    batch_parser.add_argument(
-        "--min-adoption", type=int, default=0, help="Minimum adoption count"
-    )
-    batch_parser.add_argument(
-        "--force", action="store_true", help="Overwrite existing lessons"
-    )
+    batch_parser.add_argument("--min-adoption", type=int, default=0, help="Minimum adoption count")
+    batch_parser.add_argument("--force", action="store_true", help="Overwrite existing lessons")
     batch_parser.add_argument(
         "--auto-confirm",
         "-y",

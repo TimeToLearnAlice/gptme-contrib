@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple
 
 def extract_lesson_info(filepath: Path) -> Dict:
     """Extract key information from a lesson markdown file."""
-    with open(filepath, "r", encoding="utf-8") as f:
+    with open(filepath, encoding="utf-8") as f:
         content = f.read()
 
     # Extract title (first # heading)
@@ -187,9 +187,7 @@ def select_best_lesson(cluster: List[Dict]) -> Dict:
         return scored_lessons[0][1]
 
     # Fall back to most recent file
-    cluster_with_mtime = [
-        (lesson["filepath"].stat().st_mtime, lesson) for lesson in cluster
-    ]
+    cluster_with_mtime = [(lesson["filepath"].stat().st_mtime, lesson) for lesson in cluster]
     cluster_with_mtime.sort(key=lambda x: -x[0])
     return cluster_with_mtime[0][1]
 

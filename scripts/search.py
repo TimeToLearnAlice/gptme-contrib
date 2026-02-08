@@ -19,9 +19,7 @@ from pathlib import Path
 from typing import Dict, List, Tuple
 
 
-def git_grep_files(
-    query: str, path_pattern: str | None = None
-) -> List[Tuple[str, int]]:
+def git_grep_files(query: str, path_pattern: str | None = None) -> List[Tuple[str, int]]:
     """Search with git grep, return (file, match_count) sorted by relevance."""
     cmd = ["git", "grep", "-l", "-i", query]
     if path_pattern:
@@ -37,9 +35,7 @@ def git_grep_files(
         if not file:
             continue
         count_cmd = ["git", "grep", "-c", "-i", query, "--", file]
-        count_result = subprocess.run(
-            count_cmd, capture_output=True, text=True, cwd=Path.cwd()
-        )
+        count_result = subprocess.run(count_cmd, capture_output=True, text=True, cwd=Path.cwd())
         if count_result.returncode == 0:
             try:
                 count = int(count_result.stdout.strip().split(":")[-1])
@@ -213,9 +209,7 @@ def main():
     )
     parser.add_argument("queries", nargs="+", help="Search queries (one or more)")
     parser.add_argument("--roam", action="store_true", help="Include Roam notes search")
-    parser.add_argument(
-        "--github", action="store_true", help="Include GitHub issues/PRs search"
-    )
+    parser.add_argument("--github", action="store_true", help="Include GitHub issues/PRs search")
     parser.add_argument(
         "--github-owners",
         help="Comma-separated list of GitHub owners/orgs to search (default: gptme). Can also set via GITHUB_SEARCH_OWNERS env var.",
@@ -235,9 +229,7 @@ def main():
         if args.github_owners:
             github_owners = [o.strip() for o in args.github_owners.split(",")]
         elif os.environ.get("GITHUB_SEARCH_OWNERS"):
-            github_owners = [
-                o.strip() for o in os.environ["GITHUB_SEARCH_OWNERS"].split(",")
-            ]
+            github_owners = [o.strip() for o in os.environ["GITHUB_SEARCH_OWNERS"].split(",")]
 
     # Define sources to search
     sources = {
@@ -253,9 +245,7 @@ def main():
 
     for query in args.queries:
         for source_name, patterns in sources.items():
-            files = [
-                file for pattern in patterns for file in git_grep_files(query, pattern)
-            ]
+            files = [file for pattern in patterns for file in git_grep_files(query, pattern)]
             for file, count in files:
                 # Keep max count across all queries
                 count_results[source_name][file] = max(
@@ -274,9 +264,7 @@ def main():
 
     # Print summary header
     total_files = sum(len(files) for files in all_results.values())
-    total_matches = sum(
-        sum(count for _, count in files) for files in all_results.values()
-    )
+    total_matches = sum(sum(count for _, count in files) for files in all_results.values())
 
     queries_str = ", ".join(repr(q) for q in args.queries)
     print(f"# Search: {queries_str}")
@@ -287,9 +275,7 @@ def main():
         files = all_results[source_name]
         if files:  # Only show sources with matches
             # Use first query for snippet display
-            print(
-                format_source_summary(source_name, files, args.queries[0], args.verbose)
-            )
+            print(format_source_summary(source_name, files, args.queries[0], args.verbose))
             print()
 
     # Git log search - combine results from all queries

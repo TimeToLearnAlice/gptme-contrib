@@ -107,9 +107,7 @@ def gepa_lite_evolve(
         print("\n📊 Score breakdown:")
         for dim, score in recommended_scores["scores"].items():
             print(f"    {dim:15s}: {score:.3f}")
-        avg = sum(recommended_scores["scores"].values()) / len(
-            recommended_scores["scores"]
-        )
+        avg = sum(recommended_scores["scores"].values()) / len(recommended_scores["scores"])
         print(f"    {'average':15s}: {avg:.3f}")
 
         print(f"\n💡 Rationale: {recommended_scores.get('rationale', 'N/A')}")
@@ -141,9 +139,7 @@ def format_pareto_summary(pareto_front: List[Tuple[str, Dict[str, Any]]]) -> str
         lines.append(f"{i}. Average: {avg_score:.3f}")
         if strong_dims:
             lines.append(f"   Strong on: {', '.join(strong_dims)}")
-        lines.append(
-            f"   Scores: {', '.join(f'{k}={v:.2f}' for k, v in scores.items())}"
-        )
+        lines.append(f"   Scores: {', '.join(f'{k}={v:.2f}' for k, v in scores.items())}")
         lines.append("")
 
     return "\n".join(lines)

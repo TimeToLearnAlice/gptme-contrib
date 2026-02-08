@@ -10,7 +10,6 @@ Provides tools to:
 """
 
 import sys
-
 from pathlib import Path
 from typing import Any
 
@@ -30,11 +29,7 @@ def list_network_lessons(network_dir: Path, agent: str) -> list[dict[str, Any]]:
 
     # Scan all agent directories except current agent
     for agent_dir in network_dir.iterdir():
-        if (
-            not agent_dir.is_dir()
-            or agent_dir.name == agent
-            or agent_dir.name.startswith(".")
-        ):
+        if not agent_dir.is_dir() or agent_dir.name == agent or agent_dir.name.startswith("."):
             continue
 
         # Scan all category directories
@@ -46,7 +41,7 @@ def list_network_lessons(network_dir: Path, agent: str) -> list[dict[str, Any]]:
             for lesson_file in category_dir.glob("*.md"):
                 try:
                     # Parse lesson to extract metadata
-                    with open(lesson_file, "r") as f:
+                    with open(lesson_file) as f:
                         content = f.read()
 
                     # Simple frontmatter extraction
@@ -59,17 +54,13 @@ def list_network_lessons(network_dir: Path, agent: str) -> list[dict[str, Any]]:
                             metadata = yaml.safe_load(frontmatter_str)
 
                             # Add file info
-                            metadata["_file"] = str(
-                                lesson_file.relative_to(network_dir)
-                            )
+                            metadata["_file"] = str(lesson_file.relative_to(network_dir))
                             metadata["_agent"] = agent_dir.name
                             metadata["_category"] = category_dir.name
 
                             lessons.append(metadata)
                 except Exception as e:
-                    print(
-                        f"Warning: Failed to parse {lesson_file}: {e}", file=sys.stderr
-                    )
+                    print(f"Warning: Failed to parse {lesson_file}: {e}", file=sys.stderr)
                     continue
 
     return lessons
@@ -87,7 +78,7 @@ def show_lesson_preview(lesson_file: Path, lines: int = 20) -> str:
         Preview string
     """
     try:
-        with open(lesson_file, "r") as f:
+        with open(lesson_file) as f:
             content_lines = f.readlines()
 
         # Skip frontmatter
@@ -109,9 +100,7 @@ def show_lesson_preview(lesson_file: Path, lines: int = 20) -> str:
         return f"Error reading file: {e}"
 
 
-def compare_with_local(
-    network_metadata: dict[str, Any], lessons_dir: Path
-) -> dict[str, Any]:
+def compare_with_local(network_metadata: dict[str, Any], lessons_dir: Path) -> dict[str, Any]:
     """
     Compare network lesson with local lessons.
 
@@ -266,9 +255,7 @@ def main():
     rec_parser.add_argument(
         "--min-confidence", type=float, default=0.7, help="Minimum confidence threshold"
     )
-    rec_parser.add_argument(
-        "--min-adoption", type=int, default=0, help="Minimum adoption count"
-    )
+    rec_parser.add_argument("--min-adoption", type=int, default=0, help="Minimum adoption count")
 
     args = parser.parse_args()
 

@@ -10,15 +10,13 @@ Usage:
     ./scripts/lessons/export.py --lesson lessons/workflow/autonomous-run.md
 """
 
-import sys
-
 import argparse
 import os
+import sys
 from pathlib import Path
 from typing import Optional
 
 import yaml
-
 
 from gptme_lessons_extras.network_schema import (
     NetworkMetadata,
@@ -139,9 +137,7 @@ def export_lesson(
 
         # Check if exists
         if output_path.exists() and not force:
-            print(
-                f"Skipping {lesson_path.name} (already exported, use --force to overwrite)"
-            )
+            print(f"Skipping {lesson_path.name} (already exported, use --force to overwrite)")
             return True
 
         # Write

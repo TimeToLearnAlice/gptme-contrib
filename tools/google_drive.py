@@ -54,9 +54,7 @@ def get_credentials_paths() -> tuple[Path, Path]:
     creds_path = Path(
         os.environ.get("GOOGLE_CREDENTIALS_PATH", DEFAULT_CREDENTIALS_PATH)
     ).expanduser()
-    token_path = Path(
-        os.environ.get("GOOGLE_TOKEN_PATH", DEFAULT_TOKEN_PATH)
-    ).expanduser()
+    token_path = Path(os.environ.get("GOOGLE_TOKEN_PATH", DEFAULT_TOKEN_PATH)).expanduser()
     return creds_path, token_path
 
 
@@ -90,9 +88,7 @@ def get_google_service(service_name: str = "drive", version: str = "v3"):
             creds.refresh(Request())
         else:
             if not creds_path.exists():
-                console.print(
-                    f"[red]Error:[/red] Credentials file not found at {creds_path}"
-                )
+                console.print(f"[red]Error:[/red] Credentials file not found at {creds_path}")
                 console.print("\nRun with --setup for setup instructions.")
                 sys.exit(1)
 
@@ -334,9 +330,7 @@ def recent(max_results: int, as_json: bool) -> None:
         for file in files:
             modified = file.get("modifiedTime", "")[:10]
             owners = file.get("owners", [])
-            owner_name = (
-                owners[0].get("displayName", "Unknown") if owners else "Unknown"
-            )
+            owner_name = owners[0].get("displayName", "Unknown") if owners else "Unknown"
 
             # Truncate name if needed
             name = file["name"]
@@ -447,9 +441,7 @@ def info(document_id: str, as_json: bool) -> None:
             return
 
         console.print(
-            Panel(
-                f"[bold]{file_info.get('name', 'Unknown')}[/bold]", border_style="blue"
-            )
+            Panel(f"[bold]{file_info.get('name', 'Unknown')}[/bold]", border_style="blue")
         )
 
         info_lines = [

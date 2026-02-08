@@ -228,9 +228,7 @@ def validate_workspace(
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        description="Validate a gptme agent workspace structure"
-    )
+    parser = argparse.ArgumentParser(description="Validate a gptme agent workspace structure")
     parser.add_argument(
         "--workspace",
         "-w",

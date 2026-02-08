@@ -101,9 +101,7 @@ class EffectivenessTracker:
             state_file: Path to persist tracker state (for resumability)
         """
         self.logs_dir = logs_dir or Path.home() / ".local/share/gptme/logs"
-        self.state_file = (
-            state_file or Path.home() / ".local/share/gptme/lesson_stats.json"
-        )
+        self.state_file = state_file or Path.home() / ".local/share/gptme/lesson_stats.json"
         self.state = self._load_state()
 
     def _load_state(self) -> TrackerState:
@@ -145,9 +143,7 @@ class EffectivenessTracker:
 
         return dirs
 
-    def _parse_lessons_from_content(
-        self, content: str
-    ) -> list[dict[str, str | list[str]]]:
+    def _parse_lessons_from_content(self, content: str) -> list[dict[str, str | list[str]]]:
         """
         Parse lesson information from a system message content.
 
@@ -225,7 +221,7 @@ class EffectivenessTracker:
 
                     except json.JSONDecodeError:
                         continue
-        except (OSError, IOError) as e:
+        except OSError as e:
             print(f"Warning: Could not read {conv_file}: {e}")
 
         return lessons_found
@@ -307,9 +303,7 @@ class EffectivenessTracker:
 
         # Final save
         self._save_state()
-        print(
-            f"Processed {len(log_dirs)} logs, {self.state.total_sessions} sessions with lessons"
-        )
+        print(f"Processed {len(log_dirs)} logs, {self.state.total_sessions} sessions with lessons")
 
         return self.state
 
@@ -348,9 +342,7 @@ class EffectivenessTracker:
         )
 
         for lesson in sorted_lessons[:top_n]:
-            top_kw = sorted(
-                lesson.keywords_matched.items(), key=lambda x: x[1], reverse=True
-            )[:3]
+            top_kw = sorted(lesson.keywords_matched.items(), key=lambda x: x[1], reverse=True)[:3]
             kw_str = ", ".join(k for k, _ in top_kw)
             sessions = len(lesson.sessions_included)
             lines.append(
@@ -380,9 +372,7 @@ class EffectivenessTracker:
             for kw, count in lesson.keywords_matched.items():
                 keyword_totals[kw] += count
 
-        top_keywords = sorted(keyword_totals.items(), key=lambda x: x[1], reverse=True)[
-            :20
-        ]
+        top_keywords = sorted(keyword_totals.items(), key=lambda x: x[1], reverse=True)[:20]
 
         lines.extend(
             [

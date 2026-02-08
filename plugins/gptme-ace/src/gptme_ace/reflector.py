@@ -24,12 +24,11 @@ The Reflector agent performs two key functions:
 """
 
 import json
+import logging
 import re
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import List, Optional
-
-import logging
 
 import click
 
@@ -123,9 +122,7 @@ class ReflectorAgent:
             model: Anthropic model name (uses gptme config/GPTME_ACE_MODEL if not set)
         """
         if anthropic is None:
-            raise ImportError(
-                "anthropic package required. Install: pip install anthropic"
-            )
+            raise ImportError("anthropic package required. Install: pip install anthropic")
         self.client = anthropic.Anthropic(api_key=api_key)
         self.model = model if model else _get_default_anthropic_model()
 
@@ -213,9 +210,7 @@ Return JSON array:
             content = response.content[0].text
 
             # Try to extract JSON from markdown code fence first
-            json_fence_match = re.search(
-                r"```(?:json)?\s*(\[.*?\])\s*```", content, re.DOTALL
-            )
+            json_fence_match = re.search(r"```(?:json)?\s*(\[.*?\])\s*```", content, re.DOTALL)
             if json_fence_match:
                 json_str = json_fence_match.group(1)
             else:
@@ -308,9 +303,7 @@ Return refined insights as JSON array:
             content = response.content[0].text
 
             # Try to extract JSON from markdown code fence first
-            json_fence_match = re.search(
-                r"```(?:json)?\s*(\[.*?\])\s*```", content, re.DOTALL
-            )
+            json_fence_match = re.search(r"```(?:json)?\s*(\[.*?\])\s*```", content, re.DOTALL)
             if json_fence_match:
                 json_str = json_fence_match.group(1)
             else:
@@ -382,9 +375,7 @@ def cli():
     type=click.Path(exists=True),
     help="Existing patterns file for deduplication",
 )
-@click.option(
-    "--dry-run", is_flag=True, help="Show what would happen without API calls"
-)
+@click.option("--dry-run", is_flag=True, help="Show what would happen without API calls")
 def analyze(
     insights_file: str,
     output: Optional[str],
@@ -441,12 +432,8 @@ def analyze(
     type=click.Path(exists=True),
     help="Patterns from analyze command",
 )
-@click.option(
-    "--output", "-o", type=click.Path(), help="Output file for refined insights"
-)
-@click.option(
-    "--dry-run", is_flag=True, help="Show what would happen without API calls"
-)
+@click.option("--output", "-o", type=click.Path(), help="Output file for refined insights")
+@click.option("--dry-run", is_flag=True, help="Show what would happen without API calls")
 def refine(
     insights_file: str,
     patterns_file: Optional[str],

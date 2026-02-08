@@ -3,7 +3,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from gptme_imagen.tools.image_gen import (
     STYLE_PRESETS,
     ImageResult,
@@ -100,8 +99,7 @@ class TestPromptEnhancement:
 
         assert simple_prompt in enhanced
         assert any(
-            kw in enhanced.lower()
-            for kw in ["quality", "detailed", "professional", "composed"]
+            kw in enhanced.lower() for kw in ["quality", "detailed", "professional", "composed"]
         )
 
     def test_enhance_short_prompt_adds_composition(self):

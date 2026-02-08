@@ -6,12 +6,11 @@ Usage:
     ./create-pr.py <lesson-file> [--scores <scores-file>] [--conversation <link>] [--dry-run]
 """
 
-import sys
-
 import argparse
 import json
 import re
 import subprocess
+import sys
 from pathlib import Path
 from typing import Optional
 
@@ -107,9 +106,7 @@ def create_lesson_pr(
     # Get repo root from git
     try:
         repo_root = Path(
-            subprocess.check_output(
-                ["git", "rev-parse", "--show-toplevel"], text=True
-            ).strip()
+            subprocess.check_output(["git", "rev-parse", "--show-toplevel"], text=True).strip()
         )
     except subprocess.CalledProcessError:
         print("❌ Not in a git repository")

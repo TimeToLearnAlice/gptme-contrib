@@ -168,9 +168,7 @@ def query_consortium(
 
         try:
             # Use retry logic with exponential backoff
-            response = _retry_with_backoff(
-                lambda m=model, q=question: _query_single_model(m, q)
-            )
+            response = _retry_with_backoff(lambda m=model, q=question: _query_single_model(m, q))
             responses[model] = response
             successful_responses[model] = response
         except Exception as e:

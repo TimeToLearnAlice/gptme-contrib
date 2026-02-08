@@ -72,9 +72,7 @@ class InputSourceOrchestrator:
                 }
             )
             self.last_poll["email"] = datetime.min
-            self.logger.info(
-                f"Initialized Email input source ({len(allowlist)} allowlist)"
-            )
+            self.logger.info(f"Initialized Email input source ({len(allowlist)} allowlist)")
 
         # Webhook
         if self.config.webhook.enabled:
@@ -180,22 +178,16 @@ class InputSourceOrchestrator:
                 # Create task
                 result = await source.create_task(request)
                 if result.success:
-                    self.logger.info(
-                        f"Created task from {source_name}: {result.task_id}"
-                    )
+                    self.logger.info(f"Created task from {source_name}: {result.task_id}")
                     tasks_created += 1
 
                     # Acknowledge input
                     try:
                         await source.acknowledge_input(request)
                     except Exception as e:
-                        self.logger.warning(
-                            f"Failed to acknowledge {source_name} input: {e}"
-                        )
+                        self.logger.warning(f"Failed to acknowledge {source_name} input: {e}")
                 else:
-                    self.logger.error(
-                        f"Failed to create task from {source_name}: {result.error}"
-                    )
+                    self.logger.error(f"Failed to create task from {source_name}: {result.error}")
 
             return tasks_created
 

@@ -14,14 +14,14 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent / "scripts"))
 
 from workspace_validator import (
-    ValidationResult,
-    validate_workspace,
-    check_required_files,
-    check_required_dirs,
-    check_gptme_toml,
-    check_fork_script,
-    REQUIRED_FILES,
     REQUIRED_DIRS,
+    REQUIRED_FILES,
+    ValidationResult,
+    check_fork_script,
+    check_gptme_toml,
+    check_required_dirs,
+    check_required_files,
+    validate_workspace,
 )
 
 
@@ -126,9 +126,7 @@ class TestCheckRequiredDirs:
 
     def test_all_required_dirs_present(self, valid_workspace):
         result = check_required_dirs(valid_workspace)
-        required_errors = [
-            e for e in result.errors if "Missing required directory" in e
-        ]
+        required_errors = [e for e in result.errors if "Missing required directory" in e]
         assert len(required_errors) == 0
 
     def test_file_not_dir(self, temp_workspace):

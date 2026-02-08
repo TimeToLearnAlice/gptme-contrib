@@ -79,7 +79,9 @@ class TextEdit:
     new_text: str
 
     def __str__(self) -> str:
-        return f"{self.file}:{self.start_line}:{self.start_column}-{self.end_line}:{self.end_column}"
+        return (
+            f"{self.file}:{self.start_line}:{self.start_column}-{self.end_line}:{self.end_column}"
+        )
 
 
 @dataclass
@@ -244,9 +246,7 @@ class SemanticToken:
 
     def __str__(self) -> str:
         mods = f" [{', '.join(self.modifiers)}]" if self.modifiers else ""
-        return (
-            f"L{self.line}:{self.column} ({self.length} chars) {self.token_type}{mods}"
-        )
+        return f"L{self.line}:{self.column} ({self.length} chars) {self.token_type}{mods}"
 
 
 @dataclass
@@ -643,9 +643,7 @@ class LSPServer:
 
         return self._parse_hover(result)
 
-    def rename(
-        self, file: Path, line: int, column: int, new_name: str
-    ) -> WorkspaceEdit | None:
+    def rename(self, file: Path, line: int, column: int, new_name: str) -> WorkspaceEdit | None:
         """Rename a symbol across the project.
 
         Args:
@@ -766,9 +764,7 @@ class LSPServer:
 
         return self._parse_text_edits(file, result)
 
-    def get_signature_help(
-        self, file: Path, line: int, column: int
-    ) -> SignatureInfo | None:
+    def get_signature_help(self, file: Path, line: int, column: int) -> SignatureInfo | None:
         """Get signature help for a function call.
 
         Args:
@@ -849,9 +845,7 @@ class LSPServer:
 
         return self._parse_inlay_hints(result)
 
-    def prepare_call_hierarchy(
-        self, file: Path, line: int, column: int
-    ) -> list[CallHierarchyItem]:
+    def prepare_call_hierarchy(self, file: Path, line: int, column: int) -> list[CallHierarchyItem]:
         """Prepare call hierarchy for a symbol (Phase 5).
 
         This is the first step in call hierarchy navigation.
@@ -1103,9 +1097,7 @@ class LSPServer:
             return []
 
         uri = self._ensure_file_open(file)
-        result = self._send_request(
-            "textDocument/documentLink", {"textDocument": {"uri": uri}}
-        )
+        result = self._send_request("textDocument/documentLink", {"textDocument": {"uri": uri}})
 
         if result is None:
             return []
@@ -1128,9 +1120,7 @@ class LSPServer:
             return []
 
         uri = self._ensure_file_open(file)
-        result = self._send_request(
-            "textDocument/codeLens", {"textDocument": {"uri": uri}}
-        )
+        result = self._send_request("textDocument/codeLens", {"textDocument": {"uri": uri}})
 
         if result is None:
             return []
@@ -1185,13 +1175,9 @@ class LSPServer:
                 param_doc = param_data.get("documentation")
                 if isinstance(param_doc, dict):
                     param_doc = param_doc.get("value", None)
-                params.append(
-                    SignatureParameter(label=str(param_label), documentation=param_doc)
-                )
+                params.append(SignatureParameter(label=str(param_label), documentation=param_doc))
 
-            signatures.append(
-                SignatureLabel(label=label, documentation=doc, parameters=params)
-            )
+            signatures.append(SignatureLabel(label=label, documentation=doc, parameters=params))
 
         return SignatureInfo(
             signatures=signatures,
@@ -1278,9 +1264,7 @@ class LSPServer:
             # Handle LocationLink (has targetUri) vs Location (has uri)
             if "targetUri" in item:
                 uri = item["targetUri"]
-                range_info = item.get(
-                    "targetRange", item.get("targetSelectionRange", {})
-                )
+                range_info = item.get("targetRange", item.get("targetSelectionRange", {}))
             else:
                 uri = item.get("uri", "")
                 range_info = item.get("range", {})
@@ -1392,9 +1376,7 @@ class LSPServer:
             )
         return hints
 
-    def _parse_call_hierarchy_items(
-        self, result: list[dict]
-    ) -> list[CallHierarchyItem]:
+    def _parse_call_hierarchy_items(self, result: list[dict]) -> list[CallHierarchyItem]:
         """Parse LSP prepareCallHierarchy response into CallHierarchyItem objects (Phase 5)."""
         items: list[CallHierarchyItem] = []
         for item in result:
@@ -1403,11 +1385,7 @@ class LSPServer:
             kind = self._symbol_kind_from_int(kind_int)
 
             uri = item.get("uri", "")
-            file = (
-                Path(uri.replace("file://", ""))
-                if uri.startswith("file://")
-                else Path(uri)
-            )
+            file = Path(uri.replace("file://", "")) if uri.startswith("file://") else Path(uri)
 
             range_obj = item.get("selectionRange", item.get("range", {}))
             start = range_obj.get("start", {})
@@ -1417,11 +1395,7 @@ class LSPServer:
             detail = item.get("detail")
 
             # Store full item data for follow-up requests
-            data = {
-                k: v
-                for k, v in item.items()
-                if k not in ("name", "kind", "uri", "detail")
-            }
+            data = {k: v for k, v in item.items() if k not in ("name", "kind", "uri", "detail")}
 
             items.append(
                 CallHierarchyItem(
@@ -1456,9 +1430,7 @@ class LSPServer:
             from_ranges: list[tuple[int, int]] = []
             for range_obj in call.get("fromRanges", []):
                 start = range_obj.get("start", {})
-                from_ranges.append(
-                    (start.get("line", 0) + 1, start.get("character", 0) + 1)
-                )
+                from_ranges.append((start.get("line", 0) + 1, start.get("character", 0) + 1))
 
             calls.append(CallHierarchyCall(item=item, from_ranges=from_ranges))
         return calls
@@ -1527,9 +1499,7 @@ class LSPServer:
         }
         return kind_map.get(kind.lower(), 12)  # Default to function
 
-    def _parse_code_actions(
-        self, result: Any, diagnostics: list[Diagnostic]
-    ) -> list[CodeAction]:
+    def _parse_code_actions(self, result: Any, diagnostics: list[Diagnostic]) -> list[CodeAction]:
         """Parse LSP codeAction response into CodeAction objects."""
         if not result:
             return []
@@ -1553,8 +1523,7 @@ class LSPServer:
                         d
                         for d in diagnostics
                         if any(
-                            ad.get("message") == d.message
-                            for ad in action.get("diagnostics", [])
+                            ad.get("message") == d.message for ad in action.get("diagnostics", [])
                         )
                     ]
 
@@ -2019,9 +1988,7 @@ class LSPManager:
 
         return server.format_document(file, tab_size, insert_spaces)
 
-    def get_signature_help(
-        self, file: Path, line: int, column: int
-    ) -> SignatureInfo | None:
+    def get_signature_help(self, file: Path, line: int, column: int) -> SignatureInfo | None:
         """Get signature help (lazy init)."""
         language = self._file_to_language(file)
         if language is None:
@@ -2047,9 +2014,7 @@ class LSPManager:
 
         return server.get_inlay_hints(file, start_line, end_line)
 
-    def prepare_call_hierarchy(
-        self, file: Path, line: int, column: int
-    ) -> list[CallHierarchyItem]:
+    def prepare_call_hierarchy(self, file: Path, line: int, column: int) -> list[CallHierarchyItem]:
         """Prepare call hierarchy for a symbol (Phase 5, lazy init)."""
         language = self._file_to_language(file)
         if language is None:

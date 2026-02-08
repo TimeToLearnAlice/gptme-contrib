@@ -27,8 +27,7 @@ class EmailConfig(BaseConfig):
 
         # Load email-specific configuration
         self.agent_email = (
-            self.get_env("AGENT_EMAIL", default="agent@example.org")
-            or "agent@example.org"
+            self.get_env("AGENT_EMAIL", default="agent@example.org") or "agent@example.org"
         )
 
         inbox_path = self.get_env(
@@ -45,9 +44,7 @@ class EmailConfig(BaseConfig):
 
         # Allowlist for auto-response
         allowlist_str = self.get_env("EMAIL_ALLOWLIST", default="") or ""
-        self.allowlist = [
-            email.strip() for email in allowlist_str.split(",") if email.strip()
-        ]
+        self.allowlist = [email.strip() for email in allowlist_str.split(",") if email.strip()]
 
     def validate(self) -> tuple[bool, str]:
         """

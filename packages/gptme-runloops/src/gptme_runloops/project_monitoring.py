@@ -100,9 +100,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             work_summary += f" +{len(self._discovered_work) - 5} more"
         self._work_description = f"project work: {work_summary}"
 
-        self.logger.info(
-            f"Found {len(self._discovered_work)} work items: {work_summary}"
-        )
+        self.logger.info(f"Found {len(self._discovered_work)} work items: {work_summary}")
         return True
 
     def discover_repositories(self) -> list[str]:
@@ -141,15 +139,11 @@ class ProjectMonitoringRun(BaseRunLoop):
                 )
 
                 if result.returncode != 0:
-                    self.logger.error(
-                        f"Failed to discover repositories in {org}: {result.stderr}"
-                    )
+                    self.logger.error(f"Failed to discover repositories in {org}: {result.stderr}")
                     continue
 
                 org_repos = [
-                    line.strip()
-                    for line in result.stdout.strip().split("\n")
-                    if line.strip()
+                    line.strip() for line in result.stdout.strip().split("\n") if line.strip()
                 ]
                 self.logger.info(f"Found {len(org_repos)} repositories in {org}")
                 repos.update(org_repos)
@@ -200,9 +194,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             for pr in prs:
                 pr_number = pr["number"]
                 updated_at = pr["updatedAt"]
-                state_file = (
-                    self.state_dir / f"{repo.replace('/', '-')}-pr-{pr_number}.state"
-                )
+                state_file = self.state_dir / f"{repo.replace('/', '-')}-pr-{pr_number}.state"
 
                 # Check if PR updated since last check
                 is_new = False
@@ -286,9 +278,7 @@ class ProjectMonitoringRun(BaseRunLoop):
                 checks = pr.get("statusCheckRollup") or []
 
                 # Check for failures
-                has_failure = any(
-                    check.get("conclusion") == "FAILURE" for check in checks
-                )
+                has_failure = any(check.get("conclusion") == "FAILURE" for check in checks)
 
                 if has_failure:
                     current_failures.append(pr_number)
@@ -442,9 +432,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             self.logger.warning(f"Error checking for mention of others: {e}")
             return False
 
-    def _check_for_bot_reviews(
-        self, repo: str, pr_number: int
-    ) -> tuple[bool, list[str]]:
+    def _check_for_bot_reviews(self, repo: str, pr_number: int) -> tuple[bool, list[str]]:
         """Check if PR has unresolved bot reviews.
 
         Bot reviews cannot be resolved via API (only maintainers can resolve them).
@@ -459,9 +447,7 @@ class ProjectMonitoringRun(BaseRunLoop):
         """
         has_bots, bot_users = has_unresolved_bot_reviews(repo, pr_number)
         if has_bots:
-            self.logger.info(
-                f"PR {repo}#{pr_number} has unresolved bot reviews from: {bot_users}"
-            )
+            self.logger.info(f"PR {repo}#{pr_number} has unresolved bot reviews from: {bot_users}")
             self.logger.info(
                 "Skipping resolution attempts - bot reviews can only be resolved by maintainers"
             )
@@ -498,9 +484,7 @@ class ProjectMonitoringRun(BaseRunLoop):
                 self.logger.warning(f"Loop prevention: {reason} for {repo}#{pr_number}")
                 return False
 
-        state_file = (
-            self.state_dir / f"{repo.replace('/', '-')}-pr-{pr_number}-comment.state"
-        )
+        state_file = self.state_dir / f"{repo.replace('/', '-')}-pr-{pr_number}-comment.state"
 
         try:
             # Get PR's current update time
@@ -523,9 +507,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             )
 
             if result.returncode != 0 or not result.stdout.strip():
-                self.logger.warning(
-                    f"Could not get PR update time for {repo}#{pr_number}"
-                )
+                self.logger.warning(f"Could not get PR update time for {repo}#{pr_number}")
                 return False
 
             current_updated = result.stdout.strip()
@@ -544,18 +526,14 @@ class ProjectMonitoringRun(BaseRunLoop):
                     if current_updated > pr_updated:
                         # Check if last activity was by agent (skip own comments)
                         if self._is_last_activity_by_self(repo, pr_number):
-                            self.logger.info(
-                                f"PR {repo}#{pr_number} updated by self, skipping"
-                            )
+                            self.logger.info(f"PR {repo}#{pr_number} updated by self, skipping")
                             # Update state to avoid repeated checks
                             state_file.write_text(
                                 f"{comment_type} {datetime.now().isoformat()} {current_updated}"
                             )
                             return False
 
-                        self.logger.info(
-                            f"PR {repo}#{pr_number} updated since last comment"
-                        )
+                        self.logger.info(f"PR {repo}#{pr_number} updated since last comment")
                         state_file.write_text(
                             f"{comment_type} {datetime.now().isoformat()} {current_updated}"
                         )
@@ -575,9 +553,7 @@ class ProjectMonitoringRun(BaseRunLoop):
                     prev_time_dt = datetime.fromisoformat(prev_time)
                     age = datetime.now() - prev_time_dt
                     if age > timedelta(hours=24):
-                        self.logger.info(
-                            f"Comment stale for {repo}#{pr_number} (age: {age})"
-                        )
+                        self.logger.info(f"Comment stale for {repo}#{pr_number} (age: {age})")
                         state_file.write_text(
                             f"{comment_type} {datetime.now().isoformat()} {current_updated}"
                         )
@@ -591,15 +567,11 @@ class ProjectMonitoringRun(BaseRunLoop):
 
             # No previous comment: post it (Rule 0)
             self.logger.info(f"First comment for {repo}#{pr_number}")
-            state_file.write_text(
-                f"{comment_type} {datetime.now().isoformat()} {current_updated}"
-            )
+            state_file.write_text(f"{comment_type} {datetime.now().isoformat()} {current_updated}")
             return True
 
         except Exception as e:
-            self.logger.error(
-                f"Error checking comment state for {repo}#{pr_number}: {e}"
-            )
+            self.logger.error(f"Error checking comment state for {repo}#{pr_number}: {e}")
             return False
 
     def check_assigned_issues(self, repo: str) -> list[WorkItem]:
@@ -654,9 +626,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             new_issues = set(current_issues) - set(prev_issues)
 
             for issue_number in new_issues:
-                issue_data = next(
-                    (i for i in issues if i["number"] == issue_number), None
-                )
+                issue_data = next((i for i in issues if i["number"] == issue_number), None)
                 if issue_data:
                     work_items.append(
                         WorkItem(
@@ -806,24 +776,18 @@ class ProjectMonitoringRun(BaseRunLoop):
                     data = json.loads(f.read_text())
                     if not data.get("processed", True) and data.get("error"):
                         failed_notifications.append((f, data))
-                except (json.JSONDecodeError, IOError):
+                except (OSError, json.JSONDecodeError):
                     continue
 
             if not failed_notifications:
                 return []
 
-            self.logger.info(
-                f"Found {len(failed_notifications)} failed Linear notification(s)"
-            )
+            self.logger.info(f"Found {len(failed_notifications)} failed Linear notification(s)")
 
             # Check if token is valid for retry
-            linear_activity = (
-                self.workspace / "scripts" / "linear" / "linear-activity.py"
-            )
+            linear_activity = self.workspace / "scripts" / "linear" / "linear-activity.py"
             if not linear_activity.exists():
-                self.logger.debug(
-                    "Linear activity script not found, skipping retry check"
-                )
+                self.logger.debug("Linear activity script not found, skipping retry check")
                 return []
 
             result = subprocess.run(
@@ -836,9 +800,7 @@ class ProjectMonitoringRun(BaseRunLoop):
             token_valid = result.returncode == 0 and "Expired: False" in result.stdout
 
             if not token_valid:
-                self.logger.debug(
-                    "Linear token still invalid, skipping notification retry"
-                )
+                self.logger.debug("Linear token still invalid, skipping notification retry")
                 return []
 
             # Create work items for retryable notifications
@@ -851,9 +813,7 @@ class ProjectMonitoringRun(BaseRunLoop):
                 if error_time:
                     try:
                         error_dt = datetime.fromisoformat(error_time)
-                        age_hours = (
-                            datetime.utcnow() - error_dt
-                        ).total_seconds() / 3600
+                        age_hours = (datetime.utcnow() - error_dt).total_seconds() / 3600
                         if age_hours > 24:
                             self.logger.debug(
                                 f"Skipping old notification: {filepath.name} ({age_hours:.1f}h old)"
@@ -929,9 +889,7 @@ class ProjectMonitoringRun(BaseRunLoop):
 
         if not work_items:
             # Shouldn't happen if has_work() was called first, but handle gracefully
-            self.logger.warning(
-                "No cached work items (has_work() may not have been called)"
-            )
+            self.logger.warning("No cached work items (has_work() may not have been called)")
             return ""  # Will be handled by execute()
 
         self.logger.info(f"Using {len(work_items)} cached work items")

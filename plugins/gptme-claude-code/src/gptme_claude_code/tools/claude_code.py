@@ -172,8 +172,7 @@ def analyze(
                 f"destroying prompt cache. Use background=True for long tasks."
             )
         logger.warning(
-            f"Sync call with timeout={timeout}s may block too long. "
-            f"Consider background=True."
+            f"Sync call with timeout={timeout}s may block too long. " f"Consider background=True."
         )
 
     if background:
@@ -263,11 +262,11 @@ def fix(
 
     commit_instruction = ""
     if auto_commit:
-        commit_instruction = (
-            "\n\nAfter fixing, commit the changes with a descriptive message."
-        )
+        commit_instruction = "\n\nAfter fixing, commit the changes with a descriptive message."
     else:
-        commit_instruction = "\n\nDo NOT commit the changes. Just make the fixes and show what was changed."
+        commit_instruction = (
+            "\n\nDo NOT commit the changes. Just make the fixes and show what was changed."
+        )
 
     prompt = f"""Fix the following issue in this codebase:
 

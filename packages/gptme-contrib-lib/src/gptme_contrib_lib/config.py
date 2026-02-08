@@ -77,9 +77,7 @@ class GitHubSourceConfig(BaseModel):
     label: str = Field(default="task-request")
     workspace_path: Path = Field(default_factory=get_workspace_path)
     poll_interval_seconds: int = Field(default=300, ge=60)
-    priority_labels: List[str] = Field(
-        default_factory=lambda: ["priority:urgent", "priority:high"]
-    )
+    priority_labels: List[str] = Field(default_factory=lambda: ["priority:urgent", "priority:high"])
     exclude_labels: List[str] = Field(default_factory=lambda: ["wontfix"])
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)
 
@@ -161,12 +159,8 @@ class SchedulerSourceConfig(BaseModel):
     """
 
     enabled: bool = Field(default=True)
-    schedule_file: Path = Field(
-        default_factory=lambda: get_agent_config_dir() / "schedule.yaml"
-    )
-    state_file: Path = Field(
-        default_factory=lambda: get_agent_data_dir() / "schedule-state.json"
-    )
+    schedule_file: Path = Field(default_factory=lambda: get_agent_config_dir() / "schedule.yaml")
+    state_file: Path = Field(default_factory=lambda: get_agent_data_dir() / "schedule-state.json")
     workspace_path: Path = Field(default_factory=get_workspace_path)
     check_interval_seconds: int = Field(default=60, ge=30)
     rate_limit: RateLimitConfig = Field(default_factory=RateLimitConfig)

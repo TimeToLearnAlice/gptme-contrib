@@ -57,7 +57,7 @@ class RunLoopLock:
             pid = os.getpid()
             # Try to get script name from process
             try:
-                with open(f"/proc/{pid}/cmdline", "r") as f:
+                with open(f"/proc/{pid}/cmdline") as f:
                     cmdline = f.read().split("\0")
                     script_name = Path(cmdline[0]).name if cmdline else "python"
             except Exception:

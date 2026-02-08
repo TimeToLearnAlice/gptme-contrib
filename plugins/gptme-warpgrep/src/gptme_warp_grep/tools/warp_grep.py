@@ -348,9 +348,7 @@ class LocalProvider:
                         timeout=10,
                     )
                     self._git_files = (
-                        set(result.stdout.strip().split("\n"))
-                        if result.stdout.strip()
-                        else set()
+                        set(result.stdout.strip().split("\n")) if result.stdout.strip() else set()
                     )
                 except Exception:
                     self._git_files = set()
@@ -427,9 +425,7 @@ class LocalProvider:
                 end_idx = min(len(all_lines), end)
                 selected = all_lines[start_idx:end_idx]
                 # Format with line numbers
-                lines = [
-                    f"{start + i}|{line.rstrip()}" for i, line in enumerate(selected)
-                ]
+                lines = [f"{start + i}|{line.rstrip()}" for i, line in enumerate(selected)]
             else:
                 # Full file with line numbers
                 lines = [f"{i + 1}|{line.rstrip()}" for i, line in enumerate(all_lines)]
@@ -484,10 +480,7 @@ class LocalProvider:
 
             for item in items:
                 # Skip excluded patterns
-                if any(
-                    item.name == exc or item.name.endswith(exc)
-                    for exc in DEFAULT_EXCLUDES
-                ):
+                if any(item.name == exc or item.name.endswith(exc) for exc in DEFAULT_EXCLUDES):
                     continue
 
                 rel_path = str(item.relative_to(self.repo_root))
@@ -524,9 +517,7 @@ class LocalProvider:
         """Analyse using git-tracked files only."""
         git_files = self._get_git_files()
         rel_target = (
-            target_path.relative_to(self.repo_root)
-            if target_path != self.repo_root
-            else Path(".")
+            target_path.relative_to(self.repo_root) if target_path != self.repo_root else Path(".")
         )
         target_prefix = str(rel_target) + "/" if str(rel_target) != "." else ""
 
@@ -564,9 +555,7 @@ class LocalProvider:
                     entries.append(
                         {
                             "name": name,
-                            "path": (target_prefix + dir_path)
-                            if target_prefix
-                            else dir_path,
+                            "path": (target_prefix + dir_path) if target_prefix else dir_path,
                             "type": "dir",
                             "depth": i,
                         }
@@ -608,15 +597,11 @@ class LocalProvider:
             # Security: prevent path traversal attacks
             if not file_path.is_relative_to(self.repo_root):
                 resolved.append(
-                    ResolvedFile(
-                        path=path, content=f"# Path outside repository: {path}"
-                    )
+                    ResolvedFile(path=path, content=f"# Path outside repository: {path}")
                 )
                 continue
             if not file_path.exists():
-                resolved.append(
-                    ResolvedFile(path=path, content=f"# File not found: {path}")
-                )
+                resolved.append(ResolvedFile(path=path, content=f"# File not found: {path}"))
                 continue
 
             try:
@@ -632,13 +617,9 @@ class LocalProvider:
                         content_lines.append(line.rstrip())
                     content_lines.append("")  # Separator between ranges
 
-                resolved.append(
-                    ResolvedFile(path=path, content="\n".join(content_lines))
-                )
+                resolved.append(ResolvedFile(path=path, content="\n".join(content_lines)))
             except Exception as e:
-                resolved.append(
-                    ResolvedFile(path=path, content=f"# Error reading {path}: {e}")
-                )
+                resolved.append(ResolvedFile(path=path, content=f"# Error reading {path}: {e}"))
 
         return resolved
 
@@ -690,9 +671,7 @@ def warp_grep_search(
         except ImportError:
             api_key = os.environ.get("MORPH_API_KEY")
     if not api_key:
-        raise ValueError(
-            "MORPH_API_KEY not set. Get one at https://morphllm.com/dashboard"
-        )
+        raise ValueError("MORPH_API_KEY not set. Get one at https://morphllm.com/dashboard")
 
     provider = LocalProvider(repo_root)
 
@@ -754,9 +733,7 @@ def warp_grep_search(
             results.append(format_tool_result(call.name, call.arguments, output))
 
         # Feed results back
-        messages.append(
-            {"role": "user", "content": "\n".join(results) + format_turn_message(turn)}
-        )
+        messages.append({"role": "user", "content": "\n".join(results) + format_turn_message(turn)})
 
     return []  # No results if we exhaust turns without finish
 

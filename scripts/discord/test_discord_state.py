@@ -118,9 +118,7 @@ class TestConcurrentMessageHandling:
             tracker.set_message_state(conv_id, msg_id, MessageState.COMPLETED)
 
         # Process multiple messages concurrently
-        tasks = [
-            update_message_state(f"msg{i}", MessageState.IN_PROGRESS) for i in range(10)
-        ]
+        tasks = [update_message_state(f"msg{i}", MessageState.IN_PROGRESS) for i in range(10)]
         await asyncio.gather(*tasks)
 
         # Verify all messages reached COMPLETED state

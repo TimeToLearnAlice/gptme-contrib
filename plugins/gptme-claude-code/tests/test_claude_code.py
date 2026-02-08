@@ -1,17 +1,17 @@
 """Tests for Claude Code plugin."""
 
-import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
+import pytest
 from gptme_claude_code.tools.claude_code import (
+    ClaudeCodeResult,
+    _check_claude_available,
     analyze,
     ask,
+    check_session,
     fix,
     implement,
-    check_session,
     kill_session,
-    _check_claude_available,
-    ClaudeCodeResult,
 )
 
 
@@ -61,9 +61,7 @@ class TestAsk:
         """Test that questions are formatted into prompts."""
         with patch("shutil.which", return_value="/usr/bin/claude"):
             with patch("subprocess.run") as mock_run:
-                mock_run.return_value = MagicMock(
-                    returncode=0, stdout="Answer here", stderr=""
-                )
+                mock_run.return_value = MagicMock(returncode=0, stdout="Answer here", stderr="")
                 ask("How does auth work?")
                 # Check the prompt was constructed
                 call_args = mock_run.call_args
@@ -79,9 +77,7 @@ class TestFix:
         """Test that auto_commit=False adds no-commit instruction."""
         with patch("shutil.which", return_value="/usr/bin/claude"):
             with patch("subprocess.run") as mock_run:
-                mock_run.return_value = MagicMock(
-                    returncode=0, stdout="Fixed", stderr=""
-                )
+                mock_run.return_value = MagicMock(returncode=0, stdout="Fixed", stderr="")
                 fix("Fix type errors", auto_commit=False)
                 call_args = mock_run.call_args
                 cmd = call_args[0][0]
@@ -96,9 +92,7 @@ class TestImplement:
         """Test that use_worktree=True adds worktree instructions."""
         with patch("shutil.which", return_value="/usr/bin/claude"):
             with patch("subprocess.run") as mock_run:
-                mock_run.return_value = MagicMock(
-                    returncode=0, stdout="Implemented", stderr=""
-                )
+                mock_run.return_value = MagicMock(returncode=0, stdout="Implemented", stderr="")
                 implement("Add feature", use_worktree=True, branch_name="test-branch")
                 call_args = mock_run.call_args
                 cmd = call_args[0][0]

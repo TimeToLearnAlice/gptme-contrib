@@ -103,9 +103,7 @@ def select_recommended_variant(
         scores = result["scores"]
 
         # Compute weighted average
-        weighted_sum = sum(
-            scores.get(dim, 0) * weight for dim, weight in weights.items()
-        )
+        weighted_sum = sum(scores.get(dim, 0) * weight for dim, weight in weights.items())
         total_weight = sum(weights.values())
         weighted_avg = weighted_sum / total_weight
 

@@ -1,15 +1,15 @@
 """Token storage utilities for managing authentication tokens in .env files."""
 
-from pathlib import Path
-from typing import List, Optional
 import shutil
 import tempfile
+from pathlib import Path
+from typing import List, Optional
 
 
 def _read_env_lines(env_path: Path) -> List[str]:
     """Read lines from .env file."""
     try:
-        with open(env_path, "r") as f:
+        with open(env_path) as f:
             return f.readlines()
     except FileNotFoundError:
         return []

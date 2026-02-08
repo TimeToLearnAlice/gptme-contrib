@@ -13,7 +13,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
-
 # Known bot patterns in GitHub usernames
 BOT_USERNAME_PATTERNS = [
     "bot",

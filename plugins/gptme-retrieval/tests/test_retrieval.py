@@ -1,8 +1,8 @@
 """Tests for gptme-retrieval plugin."""
 
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from gptme_retrieval import get_retrieval_config, retrieve_context, DEFAULT_CONFIG
+from gptme_retrieval import DEFAULT_CONFIG, get_retrieval_config, retrieve_context
 
 
 def test_get_retrieval_config_defaults():
@@ -35,9 +35,7 @@ def test_retrieve_context_grep():
 def test_retrieve_context_threshold_filtering():
     """Test that results below threshold are filtered."""
     mock_result = MagicMock()
-    mock_result.stdout = (
-        '[{"content": "high", "score": 0.9}, {"content": "low", "score": 0.1}]'
-    )
+    mock_result.stdout = '[{"content": "high", "score": 0.9}, {"content": "low", "score": 0.1}]'
     mock_result.returncode = 0
 
     with patch("subprocess.run", return_value=mock_result):

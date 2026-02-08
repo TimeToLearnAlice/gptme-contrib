@@ -126,23 +126,17 @@ def extract_episodes(messages: List[Dict]) -> List[Dict[str, Any]]:
 
             if in_struggle and struggle_start_idx is not None:
                 # Close struggle episode
-                tool_invocations = count_tool_invocations(
-                    messages, struggle_start_idx, i
-                )
+                tool_invocations = count_tool_invocations(messages, struggle_start_idx, i)
                 duration_min = None
                 if struggle_start_ts and success_ts:
-                    duration_min = round(
-                        (success_ts - struggle_start_ts).total_seconds() / 60, 2
-                    )
+                    duration_min = round((success_ts - struggle_start_ts).total_seconds() / 60, 2)
 
                 episodes.append(
                     {
                         "kind": "struggle",
                         "start_index": struggle_start_idx,
                         "end_index": i - 1 if i > 0 else i,
-                        "start_ts": struggle_start_ts.isoformat()
-                        if struggle_start_ts
-                        else None,
+                        "start_ts": struggle_start_ts.isoformat() if struggle_start_ts else None,
                         "end_ts": success_ts.isoformat() if success_ts else None,
                         "error_count": failure_count,
                         "retry_depth": failure_count,
@@ -161,17 +155,13 @@ def extract_episodes(messages: List[Dict]) -> List[Dict[str, Any]]:
                         "kind": "pivot",
                         "start_index": max(struggle_start_idx, 0),
                         "end_index": i,
-                        "start_ts": struggle_start_ts.isoformat()
-                        if struggle_start_ts
-                        else None,
+                        "start_ts": struggle_start_ts.isoformat() if struggle_start_ts else None,
                         "end_ts": success_ts.isoformat() if success_ts else None,
                         "error_count": failure_count,
                         "retry_depth": failure_count,
                         "tool_invocations": tool_invocations,
                         "duration_min": duration_min,
-                        "evidence_snippets": (evidence_snippets + [snippet(content)])[
-                            :3
-                        ],
+                        "evidence_snippets": (evidence_snippets + [snippet(content)])[:3],
                         "title": "Pivot: first success after failures",
                         "context": "First successful operation following a struggle",
                         "rationale": "Represents a change that resolved prior failures.",
@@ -213,15 +203,11 @@ def extract_episodes(messages: List[Dict]) -> List[Dict[str, Any]]:
                 "kind": "struggle",
                 "start_index": struggle_start_idx,
                 "end_index": end_idx,
-                "start_ts": struggle_start_ts.isoformat()
-                if struggle_start_ts
-                else None,
+                "start_ts": struggle_start_ts.isoformat() if struggle_start_ts else None,
                 "end_ts": end_ts,
                 "error_count": failure_count,
                 "retry_depth": failure_count,
-                "tool_invocations": count_tool_invocations(
-                    messages, struggle_start_idx, end_idx
-                ),
+                "tool_invocations": count_tool_invocations(messages, struggle_start_idx, end_idx),
                 "duration_min": None,
                 "evidence_snippets": evidence_snippets[:],
                 "title": f"Struggle: {failure_count} consecutive failures (unfinished)",
@@ -279,9 +265,7 @@ def derive_experiences(episodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
             else:
                 # Fallback to generic summary if no LLM enhancement
                 failure_cnt = ep.get("error_count", 0) or 0
-                title = ep.get("title") or (
-                    "Pivot" if ep["kind"] == "pivot" else "Breakthrough"
-                )
+                title = ep.get("title") or ("Pivot" if ep["kind"] == "pivot" else "Breakthrough")
                 context = ep.get("context", "")
                 what_changed = (
                     f"After {failure_cnt} failure(s), a success occurred leading to a state change."
@@ -290,9 +274,7 @@ def derive_experiences(episodes: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
                 )
                 rationale = ep.get("rationale", "")
                 confidence = (
-                    0.8
-                    if ep["kind"] == "breakthrough"
-                    else (0.7 if failure_cnt >= 2 else 0.6)
+                    0.8 if ep["kind"] == "breakthrough" else (0.7 if failure_cnt >= 2 else 0.6)
                 )
 
             moments.append(
@@ -333,13 +315,9 @@ def generate_summary(messages: List[Dict], experiences: List[Dict]) -> str:
     summary_parts.append(f"Conversation focused on: {first_user_msg}")
 
     if experiences:
-        pivots = sum(
-            1 for m in experiences if m.get("episode_ref", {}).get("kind") == "pivot"
-        )
+        pivots = sum(1 for m in experiences if m.get("episode_ref", {}).get("kind") == "pivot")
         breakthroughs = sum(
-            1
-            for m in experiences
-            if m.get("episode_ref", {}).get("kind") == "breakthrough"
+            1 for m in experiences if m.get("episode_ref", {}).get("kind") == "breakthrough"
         )
         summary_parts.append(
             f"Extracted {len(experiences)} experiences ({pivots} pivots, {breakthroughs} breakthroughs)"
@@ -511,9 +489,7 @@ def main(log_path: str, output_dir: str, verbose: bool):
                 click.echo(f"    - {tool}: {count}")
             click.echo(f"  Files modified: {len(analysis.files_modified)}")
             click.echo(f"  Episodes: {analysis.metadata.get('episodes_count', 0)}")
-            click.echo(
-                f"  Experiences: {analysis.metadata.get('experiences_count', 0)}"
-            )
+            click.echo(f"  Experiences: {analysis.metadata.get('experiences_count', 0)}")
 
     except Exception as e:
         click.echo(f"Error analyzing conversation: {e}", err=True)

@@ -118,9 +118,7 @@ Return ONLY valid JSON."""
     messages_llm = [Message("system", system_prompt), Message("user", user_prompt)]
 
     try:
-        response = reply(
-            messages_llm, model="anthropic/claude-3-5-haiku-20241022", stream=True
-        )
+        response = reply(messages_llm, model="anthropic/claude-3-5-haiku-20241022", stream=True)
 
         if isinstance(response, list):
             content = response[-1].content
@@ -172,9 +170,7 @@ def _find_lesson_template() -> Path:
     )
 
 
-def llm_author_reflect(
-    moment: Dict, conversation_id: str, temperature: float = 0.7
-) -> str:
+def llm_author_reflect(moment: Dict, conversation_id: str, temperature: float = 0.7) -> str:
     """Generate a lesson using LLM reflection on a experience.
 
     Uses the new signals-first template format with ENHANCED evidence integration.
@@ -182,7 +178,7 @@ def llm_author_reflect(
     # Read the new lesson template
     template_path = _find_lesson_template()
 
-    with open(template_path, "r", encoding="utf-8") as f:
+    with open(template_path, encoding="utf-8") as f:
         template = f.read()
 
     # Prepare evidence with enhanced formatting
@@ -197,12 +193,8 @@ def llm_author_reflect(
     evidence_lines.append(
         "**KEY REQUIREMENT**: You MUST reference specific evidence snippets in your lesson."
     )
-    evidence_lines.append(
-        "Use format: [Evidence 1], [Evidence 2], etc. to cite specific snippets."
-    )
-    evidence_lines.append(
-        "Quote actual error messages, commands, or outputs from the evidence.\n"
-    )
+    evidence_lines.append("Use format: [Evidence 1], [Evidence 2], etc. to cite specific snippets.")
+    evidence_lines.append("Quote actual error messages, commands, or outputs from the evidence.\n")
     evidence = "\n".join(evidence_lines)
 
     metrics = moment.get("metrics", {})
@@ -281,9 +273,7 @@ The very first characters of your response must be the opening "---" of the YAML
     messages = [Message("system", system_prompt), Message("user", user_prompt)]
 
     # Generate lesson with LLM (use streaming to avoid timeout)
-    response = reply(
-        messages, model="anthropic/claude-3-5-sonnet-20241022", stream=True
-    )
+    response = reply(messages, model="anthropic/claude-3-5-sonnet-20241022", stream=True)
 
     # reply() with stream=True returns a list of messages
     if isinstance(response, list):

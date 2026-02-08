@@ -10,13 +10,12 @@ Identifies lessons that may need review based on:
 Generates report of stale lessons for manual review.
 """
 
-import sys
-
-import subprocess
-from pathlib import Path
-from datetime import datetime
-from typing import Any, Dict, List, Tuple
 import json
+import subprocess
+import sys
+from datetime import datetime
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
 
 def get_lesson_files(lessons_dir: Path) -> List[Path]:
@@ -41,9 +40,7 @@ def load_lesson_analytics() -> dict[str, Any]:
     """Load lesson usage data from analytics report"""
     analytics_file = Path("knowledge/meta/lesson-usage-report.json")
     if not analytics_file.exists():
-        print(
-            "Warning: No analytics report found. Run scripts/lesson_analytics.py first."
-        )
+        print("Warning: No analytics report found. Run scripts/lesson_analytics.py first.")
         return {}
 
     try:
@@ -129,9 +126,7 @@ def generate_report(stale_lessons: List[Tuple[Path, str, Dict]]) -> str:
     # Sort by staleness (days since modified + days since referenced)
     def staleness_score(item):
         _, _, details = item
-        return details.get("days_since_modified", 0) + details.get(
-            "days_since_referenced", 0
-        )
+        return details.get("days_since_modified", 0) + details.get("days_since_referenced", 0)
 
     sorted_lessons = sorted(stale_lessons, key=staleness_score, reverse=True)
 

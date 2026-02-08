@@ -67,9 +67,7 @@ class SimilarityResult:
 class LessonDiscovery:
     """Main discovery system for lesson recommendations and similarity detection."""
 
-    def __init__(
-        self, lessons_dir: Optional[Path] = None, history_dir: Optional[Path] = None
-    ):
+    def __init__(self, lessons_dir: Optional[Path] = None, history_dir: Optional[Path] = None):
         """Initialize discovery system.
 
         Args:
@@ -162,9 +160,7 @@ class LessonDiscovery:
         except (json.JSONDecodeError, KeyError):
             return {}
 
-    def score_keyword_match(
-        self, features: LessonFeatures, context_keywords: Set[str]
-    ) -> float:
+    def score_keyword_match(self, features: LessonFeatures, context_keywords: Set[str]) -> float:
         """Score lesson based on keyword match with context.
 
         Returns score 0.0-1.0 based on Jaccard similarity.
@@ -318,9 +314,7 @@ class LessonDiscovery:
 
         return len(intersection) / len(union) if union else 0.0
 
-    def classify_relationship(
-        self, similarity_score: float, keyword_overlap: float
-    ) -> str:
+    def classify_relationship(self, similarity_score: float, keyword_overlap: float) -> str:
         """Classify relationship between two lessons."""
         if similarity_score > 0.95 and keyword_overlap > 0.9:
             return "exact"
@@ -333,9 +327,7 @@ class LessonDiscovery:
         else:
             return "unrelated"
 
-    def find_similar(
-        self, lesson_id: str, threshold: float = 0.5
-    ) -> List[SimilarityResult]:
+    def find_similar(self, lesson_id: str, threshold: float = 0.5) -> List[SimilarityResult]:
         """Find lessons similar to the given lesson.
 
         Args:
@@ -370,9 +362,7 @@ class LessonDiscovery:
                 target_features.full_text, compare_features.full_text
             )
 
-            keyword_overlap = self.compute_keyword_overlap(
-                target_features, compare_features
-            )
+            keyword_overlap = self.compute_keyword_overlap(target_features, compare_features)
 
             # Skip if below threshold
             if text_similarity < threshold:
@@ -396,9 +386,7 @@ class LessonDiscovery:
         results.sort(key=lambda x: x.similarity_score, reverse=True)
         return results
 
-    def find_all_duplicates(
-        self, threshold: float = 0.8
-    ) -> List[Tuple[str, str, float]]:
+    def find_all_duplicates(self, threshold: float = 0.8) -> List[Tuple[str, str, float]]:
         """Find all potential duplicate lesson pairs.
 
         Args:
@@ -410,9 +398,7 @@ class LessonDiscovery:
         duplicates = []
         processed = set()
 
-        lesson_files = [
-            f for f in self.lessons_dir.rglob("*.md") if f.name != "README.md"
-        ]
+        lesson_files = [f for f in self.lessons_dir.rglob("*.md") if f.name != "README.md"]
 
         for i, lesson_a in enumerate(lesson_files):
             features_a = self.extract_features(lesson_a)
@@ -432,9 +418,7 @@ class LessonDiscovery:
                 )
 
                 if text_similarity >= threshold:
-                    duplicates.append(
-                        (features_a.lesson_id, features_b.lesson_id, text_similarity)
-                    )
+                    duplicates.append((features_a.lesson_id, features_b.lesson_id, text_similarity))
 
         # Sort by similarity score
         duplicates.sort(key=lambda x: x[2], reverse=True)
@@ -450,27 +434,19 @@ def main():
 
     # Recommend command
     recommend_parser = subparsers.add_parser("recommend", help="Recommend lessons")
-    recommend_parser.add_argument(
-        "--context", type=str, help="Context keywords (comma-separated)"
-    )
+    recommend_parser.add_argument("--context", type=str, help="Context keywords (comma-separated)")
     recommend_parser.add_argument(
         "--keywords", nargs="+", help="Context keywords (space-separated)"
     )
-    recommend_parser.add_argument(
-        "--top-k", type=int, default=5, help="Number of recommendations"
-    )
+    recommend_parser.add_argument("--top-k", type=int, default=5, help="Number of recommendations")
 
     # Similar command
     similar_parser = subparsers.add_parser("similar", help="Find similar lessons")
     similar_parser.add_argument("lesson_id", type=str, help="Lesson ID to compare")
-    similar_parser.add_argument(
-        "--threshold", type=float, default=0.5, help="Similarity threshold"
-    )
+    similar_parser.add_argument("--threshold", type=float, default=0.5, help="Similarity threshold")
 
     # Duplicates command
-    duplicates_parser = subparsers.add_parser(
-        "duplicates", help="Find duplicate lessons"
-    )
+    duplicates_parser = subparsers.add_parser("duplicates", help="Find duplicate lessons")
     duplicates_parser.add_argument(
         "--threshold", type=float, default=0.8, help="Duplicate threshold"
     )

@@ -33,19 +33,19 @@ from gptme.message import Message
 from gptme.tools.base import ConfirmFunc, Parameter, ToolSpec
 
 from ..lsp_client import (
-    LSPServer,
-    LSPManager,
     KNOWN_SERVERS,
-    Location,
-    HoverInfo,
-    WorkspaceEdit,
-    SignatureInfo,
-    TextEdit,
-    InlayHint,
-    CallHierarchyItem,
     CallHierarchyCall,
-    SymbolInfo,
+    CallHierarchyItem,
+    HoverInfo,
+    InlayHint,
+    Location,
+    LSPManager,
+    LSPServer,
     SemanticToken,
+    SignatureInfo,
+    SymbolInfo,
+    TextEdit,
+    WorkspaceEdit,
 )
 
 if TYPE_CHECKING:
@@ -553,9 +553,7 @@ def execute(
                 ".go": "gopls (go install golang.org/x/tools/gopls@latest)",
                 ".rs": "rust-analyzer (rustup component add rust-analyzer)",
             }
-            hint = install_hints.get(
-                suffix, "the appropriate LSP server for this language"
-            )
+            hint = install_hints.get(suffix, "the appropriate LSP server for this language")
             return Message(
                 "system",
                 f"No LSP server available for {suffix} files.\n\nInstall: {hint}",
@@ -590,9 +588,7 @@ def execute(
             )
 
         if not locations:
-            return Message(
-                "system", f"No definition found for symbol at {file.name}:{line}:{col}"
-            )
+            return Message("system", f"No definition found for symbol at {file.name}:{line}:{col}")
 
         # Format results
         lines = [f"**Definition for symbol at {file.name}:{line}:{col}**\n"]
@@ -627,9 +623,7 @@ def execute(
             )
 
         if not locations:
-            return Message(
-                "system", f"No references found for symbol at {file.name}:{line}:{col}"
-            )
+            return Message("system", f"No references found for symbol at {file.name}:{line}:{col}")
 
         # Format results
         lines = [
@@ -776,11 +770,7 @@ def execute(
         # Group edits by line for cleaner display
         for edit in edits[:20]:  # Limit display to 20 edits
             if edit.start_line == edit.end_line:
-                preview = (
-                    edit.new_text[:50] + "..."
-                    if len(edit.new_text) > 50
-                    else edit.new_text
-                )
+                preview = edit.new_text[:50] + "..." if len(edit.new_text) > 50 else edit.new_text
                 preview = preview.replace("\n", "\\n")
                 lines.append(f"  - Line {edit.start_line}: `{preview}`")
             else:
@@ -884,9 +874,7 @@ def execute(
                     start_line = int(parts[0]) if parts[0] else 1
                     end_line = int(parts[1]) if parts[1] else None
                 except ValueError:
-                    return Message(
-                        "system", f"Invalid range: {range_str}. Use start:end"
-                    )
+                    return Message("system", f"Invalid range: {range_str}. Use start:end")
 
         hints = _get_lsp_inlay_hints(file, start_line, end_line, workspace)
 
@@ -1159,9 +1147,7 @@ def execute(
                 total_shown += 1
 
         if len(all_symbols) > max_symbols:
-            result_lines.append(
-                f"\n*Showing {max_symbols} of {len(all_symbols)} symbols*"
-            )
+            result_lines.append(f"\n*Showing {max_symbols} of {len(all_symbols)} symbols*")
 
         return Message("system", "\n".join(result_lines))
 
@@ -1194,9 +1180,7 @@ def execute(
             except Exception:
                 status_lines.append(f"❌ {name} ({lang}) - not found")
 
-        status_lines.append(
-            "\n**Workspace:** " + (str(workspace) if workspace else "Unknown")
-        )
+        status_lines.append("\n**Workspace:** " + (str(workspace) if workspace else "Unknown"))
 
         return Message("system", "\n".join(status_lines))
 
@@ -1215,9 +1199,7 @@ def execute(
                 timeout=10,
             )
             changed_files = (
-                diff_result.stdout.strip().split("\n")
-                if diff_result.stdout.strip()
-                else []
+                diff_result.stdout.strip().split("\n") if diff_result.stdout.strip() else []
             )
 
             # Also check staged files
@@ -1229,9 +1211,7 @@ def execute(
                 timeout=10,
             )
             staged_files = (
-                staged_result.stdout.strip().split("\n")
-                if staged_result.stdout.strip()
-                else []
+                staged_result.stdout.strip().split("\n") if staged_result.stdout.strip() else []
             )
 
             all_files = set(changed_files + staged_files)
@@ -1250,8 +1230,7 @@ def execute(
             lsp_files = [
                 f
                 for f in all_files
-                if Path(f).suffix.lower() in supported_extensions
-                and (workspace / f).exists()
+                if Path(f).suffix.lower() in supported_extensions and (workspace / f).exists()
             ]
 
             if not lsp_files:
@@ -1312,9 +1291,7 @@ def execute(
                 start_line = int(parts[1])
                 end_line = int(parts[2])
             except ValueError:
-                return Message(
-                    "system", "Invalid line range. Usage: lsp tokens <file> [start:end]"
-                )
+                return Message("system", "Invalid line range. Usage: lsp tokens <file> [start:end]")
 
         if not tokens_file.is_absolute():
             if workspace:
@@ -1345,8 +1322,7 @@ def execute(
         for line_num in shown_lines:
             line_tokens = lines_dict[line_num]
             token_strs = [
-                f"`{t.token_type}`"
-                + (f"[{','.join(t.modifiers)}]" if t.modifiers else "")
+                f"`{t.token_type}`" + (f"[{','.join(t.modifiers)}]" if t.modifiers else "")
                 for t in line_tokens
             ]
             result_lines.append(f"L{line_num}: {', '.join(token_strs)}")

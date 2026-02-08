@@ -9,7 +9,6 @@ import time
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from gptme_imagen.tools.image_gen import ImageResult, generate_image
 
 
@@ -136,18 +135,14 @@ class TestOutputPathHandling:
     def test_nested_directory_creation(self, mock_gemini, tmp_path):
         """Test creation of nested directories for output."""
         nested_path = tmp_path / "deep" / "nested" / "path" / "image.png"
-        result = generate_image(
-            prompt="Test", provider="gemini", output_path=str(nested_path)
-        )
+        result = generate_image(prompt="Test", provider="gemini", output_path=str(nested_path))
 
         assert result.image_path.exists()
         assert result.image_path.parent.exists()
 
     def test_path_with_tilde_expansion(self, mock_gemini):
         """Test ~ expansion in paths."""
-        result = generate_image(
-            prompt="Test", provider="gemini", output_path="~/test_image.png"
-        )
+        result = generate_image(prompt="Test", provider="gemini", output_path="~/test_image.png")
 
         assert result.image_path.is_absolute()
         assert "~" not in str(result.image_path)
@@ -165,18 +160,14 @@ class TestErrorHandling:
     def test_missing_api_key_gemini(self, mock_generate):
         """Test error when Gemini API key missing."""
         # Mock will raise the API key error as the real function would
-        mock_generate.side_effect = ValueError(
-            "GOOGLE_API_KEY environment variable not set"
-        )
+        mock_generate.side_effect = ValueError("GOOGLE_API_KEY environment variable not set")
         with pytest.raises(RuntimeError, match="GOOGLE_API_KEY"):
             generate_image(prompt="Test", provider="gemini")
 
     @patch("gptme_imagen.tools.image_gen._generate_dalle")
     def test_missing_api_key_dalle(self, mock_generate):
         """Test error when OpenAI API key missing."""
-        mock_generate.side_effect = ValueError(
-            "OPENAI_API_KEY environment variable not set"
-        )
+        mock_generate.side_effect = ValueError("OPENAI_API_KEY environment variable not set")
         with pytest.raises(RuntimeError, match="OPENAI_API_KEY"):
             generate_image(prompt="Test", provider="dalle")
 
@@ -192,9 +183,7 @@ class TestErrorHandling:
         """Test error when API returns no image data."""
         mock_generate.side_effect = ValueError("No image data received from API")
         with pytest.raises(RuntimeError, match="No image data"):
-            generate_image(
-                prompt="Test", provider="dalle", output_path=str(tmp_path / "test.png")
-            )
+            generate_image(prompt="Test", provider="dalle", output_path=str(tmp_path / "test.png"))
 
 
 class TestEdgeCases:
@@ -205,9 +194,7 @@ class TestEdgeCases:
         long_prompt = "Test prompt " * 1000  # Very long
         output_path = tmp_path / "test.png"
 
-        result = generate_image(
-            prompt=long_prompt, provider="gemini", output_path=str(output_path)
-        )
+        result = generate_image(prompt=long_prompt, provider="gemini", output_path=str(output_path))
 
         assert result.prompt == long_prompt
         assert output_path.exists()
@@ -228,9 +215,7 @@ class TestEdgeCases:
         # Test path with spaces and special chars
         output_path = tmp_path / "test image (v2).png"
 
-        result = generate_image(
-            prompt="Test", provider="gemini", output_path=str(output_path)
-        )
+        result = generate_image(prompt="Test", provider="gemini", output_path=str(output_path))
 
         assert result.image_path.exists()
 
