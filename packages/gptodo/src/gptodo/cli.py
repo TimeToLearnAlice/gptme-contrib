@@ -4635,14 +4635,15 @@ def worktree_list_cmd(output_json: bool):
 
 @worktree_group.command("status")
 @click.argument("worktree_path", type=click.Path(exists=True))
+@click.option("--base", default="origin/master", help="Base branch to compare against")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-def worktree_status_cmd(worktree_path: str, output_json: bool):
+def worktree_status_cmd(worktree_path: str, base: str, output_json: bool):
     """Show status of a worktree.
 
-    Displays branch name, uncommitted changes, and commits ahead of origin/master.
+    Displays branch name, uncommitted changes, and commits ahead of base branch.
     """
     console = Console()
-    status = get_worktree_status(Path(worktree_path))
+    status = get_worktree_status(Path(worktree_path), base_branch=base)
 
     if output_json:
         print(json.dumps(status, indent=2))
@@ -4761,17 +4762,18 @@ def worktree_merge_cmd(worktree_path: str, target: str, keep: bool):
 
 
 @worktree_group.command("cleanup")
+@click.option("--base", default="origin/master", help="Base branch to check merge against")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-def worktree_cleanup_cmd(output_json: bool):
+def worktree_cleanup_cmd(base: str, output_json: bool):
     """Remove worktrees whose branches have been merged.
 
     Automatically cleans up worktrees that are no longer needed
-    because their branches have been merged into origin/master.
+    because their branches have been merged into the base branch.
     """
     console = Console()
     repo_root = find_repo_root(Path.cwd())
 
-    count = cleanup_merged_worktrees(repo_root)
+    count = cleanup_merged_worktrees(repo_root, base_branch=base)
 
     if output_json:
         print(json.dumps({"cleaned_up": count}, indent=2))

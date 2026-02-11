@@ -89,8 +89,8 @@ def create_worktree(
         )
 
     # Fetch latest from origin to ensure base_branch is up to date
-    # Extract the ref to fetch from base_branch (e.g. "origin/master" -> "master")
-    fetch_ref = base_branch.split("/", 1)[1] if "/" in base_branch else base_branch
+    # Extract the ref to fetch from base_branch (e.g. "refs/heads/main" -> "main")
+    fetch_ref = base_branch.split("/")[-1] if "/" in base_branch else base_branch
     result = _run_git(["fetch", "origin", fetch_ref], cwd=workspace)
     if result.returncode != 0:
         logger.warning(f"Failed to fetch: {result.stderr}")
@@ -105,7 +105,13 @@ def create_worktree(
         raise RuntimeError(f"Failed to create worktree: {result.stderr}")
 
     # Unset upstream to prevent accidental push to base branch
-    _run_git(["branch", "--unset-upstream"], cwd=worktree_path)
+    # Only unset if upstream exists (new branches may not have one)
+    upstream_result = _run_git(
+        ["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"],
+        cwd=worktree_path,
+    )
+    if upstream_result.returncode == 0:
+        _run_git(["branch", "--unset-upstream"], cwd=worktree_path)
 
     logger.info(f"Created worktree at {worktree_path} on branch {branch_name}")
 
@@ -307,8 +313,12 @@ def merge_worktree(
     return True
 
 
-def get_worktree_status(worktree_path: Path) -> dict:
+def get_worktree_status(worktree_path: Path, base_branch: str = "origin/master") -> dict:
     """Get status of a worktree (changes, commits ahead, etc).
+
+    Args:
+        worktree_path: Path to the worktree
+        base_branch: Base branch to compare against (default: origin/master)
 
     Returns:
         Dict with status information
@@ -332,8 +342,8 @@ def get_worktree_status(worktree_path: Path) -> dict:
         status["uncommitted_changes"] = True
         status["files_changed"] = [line[3:] for line in result.stdout.strip().split("\n") if line]
 
-    # Count commits ahead of origin/master
-    result = _run_git(["rev-list", "--count", "origin/master..HEAD"], cwd=worktree_path)
+    # Count commits ahead of base_branch
+    result = _run_git(["rev-list", "--count", f"{base_branch}..HEAD"], cwd=worktree_path)
     if result.returncode == 0:
         try:
             status["commits_ahead"] = int(result.stdout.strip())
@@ -343,8 +353,14 @@ def get_worktree_status(worktree_path: Path) -> dict:
     return status
 
 
-def cleanup_merged_worktrees(workspace: Optional[Path] = None) -> int:
+def cleanup_merged_worktrees(
+    workspace: Optional[Path] = None, base_branch: str = "origin/master"
+) -> int:
     """Remove worktrees whose branches have been merged.
+
+    Args:
+        workspace: Root workspace directory
+        base_branch: Base branch to check merge against (default: origin/master)
 
     Returns:
         Count of worktrees cleaned up
@@ -373,11 +389,17 @@ def cleanup_merged_worktrees(workspace: Optional[Path] = None) -> int:
         if branch.startswith("refs/heads/"):
             branch = branch[11:]
 
-        # Check if branch is merged into origin/master
-        result = _run_git(["branch", "--merged", "origin/master"], cwd=workspace)
+        # Check if branch is merged into base_branch
+        result = _run_git(["branch", "--merged", base_branch], cwd=workspace)
         # Use exact line matching to avoid substring false positives
         # (e.g. "task-foo" matching "task-foobar")
-        merged_branches = [b.strip().lstrip("* ") for b in result.stdout.splitlines()]
+        # Handle "* " prefix safely (current branch marker)
+        merged_branches = []
+        for b in result.stdout.splitlines():
+            b = b.strip()
+            if b.startswith("* "):
+                b = b[2:]  # Remove "* " prefix
+            merged_branches.append(b)
         if result.returncode == 0 and branch in merged_branches:
             logger.info(f"Removing merged worktree: {path} (branch: {branch})")
             if remove_worktree(path, workspace=workspace):
