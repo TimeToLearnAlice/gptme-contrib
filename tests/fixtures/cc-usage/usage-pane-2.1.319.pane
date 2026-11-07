@@ -5,6 +5,11 @@
 # summary, not a usage window. `Current week (Fable)` replaced
 # `Current week (Sonnet only)` in the same release (2.1.318).
 #
+# Provenance and the upstream follow-up:
+#   knowledge/research/evidence/2026-11-06-cc-usage-2.1.319-weekly-only-pane.md
+# Bob's regression test embeds the same labels inline:
+#   tests/test_check_claude_usage_script.py::test_cc_2_1_319_weekly_only_pane_stamps_the_absent_five_hour
+#
 # Do NOT re-capture just to "check if 5h came back". A scrape costs a whole CC TUI.
 
    Settings  Status   Config   Usage   Stats
