@@ -304,7 +304,7 @@ def show(task_id, render=False):
 
     if not task_id:
         console.print("[red]Error: Task ID or filename required[/]")
-        return
+        sys.exit(1)
 
     task = None
     if not task_id.isdigit():
@@ -321,7 +321,7 @@ def show(task_id, render=False):
         tasks = load_tasks(tasks_dir)
         if not tasks:
             console.print("[red]No tasks found[/]")
-            return
+            sys.exit(1)
 
         # Sort tasks by creation date for consistent ID mapping
         tasks.sort(key=lambda t: t.created)
@@ -338,7 +338,7 @@ def show(task_id, render=False):
 
     if not task:
         console.print(f"[red]Error: Task {task_id} not found[/]")
-        return
+        sys.exit(1)
 
     # Create rich table for metadata
     table = Table(show_header=False, box=None)
@@ -2048,21 +2048,14 @@ def check(fix: bool, task_files: list[str]):
     # Dependency resolution must also see archived tasks (tasks/archive/**),
     # which the non-recursive glob above skips — otherwise any live task that
     # depends on a completed, archived task fails with a false "not found".
-    # Scoped separately from `all_tasks` so archived tasks aren't pulled into
-    # full "check all" validation output (validation/link-check issues), only
-    # into dependency-existence and cycle resolution.
-    archive_load_errors: list[tuple[Path, str]] = []
-    # Load recursively from tasks/archive/ directly, so unrelated malformed
-    # files elsewhere in the task tree can't inject phantom dependency IDs.
-    archive_dir = tasks_dir / "archive"
-    dependency_universe = list(all_tasks)
-    if archive_dir.is_dir():
-        dependency_universe += load_tasks(
-            archive_dir,
-            recursive=True,
-            errors_out=archive_load_errors,
-            include_subtasks=False,
-        )
+    # Archived tasks are only consulted for dependency-existence and cycle
+    # resolution, never pulled into validation output, and are resolved on
+    # demand (see build_dependency_universe): eagerly parsing an ~8.6k-file
+    # archive cost ~1.6s on every single-file pre-commit check, while only the
+    # few names a validated task actually requires are ever looked up.
+    dependency_universe = build_dependency_universe(
+        {task.id: task for task in all_tasks}, tasks_dir, preserve_load_order=True
+    )
 
     # Determine which tasks to validate
     scoped_load_errors: list[tuple[Path, str]] = []
@@ -2109,10 +2102,13 @@ def check(fix: bool, task_files: list[str]):
     # A malformed task file still exists for relationship checks. Treating its
     # id as missing would turn a non-blocking out-of-scope parse warning into a
     # blocking dependency error on an otherwise valid scoped task.
-    task_ids = {task.id for task in dependency_universe}
+    # An archived file that fails to parse still exists, for the same reason.
+    task_ids = {task.id for task in all_tasks}
     task_ids.update(path.stem for path, _ in global_load_errors)
     task_ids.update(path.stem for path, _ in scoped_load_errors)
-    task_ids.update(path.stem for path, _ in archive_load_errors)
+
+    def dependency_exists(dep: str) -> bool:
+        return dep in task_ids or dependency_universe.has_archived(dep)
 
     # Track dependencies in tasks being validated
     tasks_with_deps = [task for task in tasks_to_validate if task.requires]
@@ -2127,7 +2123,7 @@ def check(fix: bool, task_files: list[str]):
         path.add(task_id)
         # Find task object to get its dependencies (search in the full
         # dependency universe, including archived tasks)
-        task = next((t for t in dependency_universe if t.id == task_id), None)
+        task = dependency_universe.get(task_id)
         if task:
             for dep in task.requires:
                 if has_cycle(dep, visited, path):
@@ -2148,7 +2144,7 @@ def check(fix: bool, task_files: list[str]):
     # Check for missing dependencies
     for task in tasks_with_deps:
         for dep in task.requires:
-            if dep not in task_ids:
+            if not dependency_exists(dep):
                 dependency_issues.append(f"{task.id}: Dependency '{dep}' not found")
 
     # Check for circular dependencies
@@ -2577,7 +2573,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
         if set_subtask:
             raise click.ClickException("No tasks found")
         console.print("[red]No tasks found[/]")
-        return
+        sys.exit(1)
 
     # Find tasks to edit
     try:
@@ -2586,7 +2582,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
         if set_subtask:
             raise click.ClickException(str(e)) from e
         console.print(f"[red]{e}[/]")
-        return
+        sys.exit(1)
 
     # Validate all field operations before applying any changes
     changes: list[tuple[str, str, str | None]] = []
@@ -2655,7 +2651,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
     # right before `gptodo lint` rejects it, recreating the two-schema split.
     _excluded = KNOWN_FRONTMATTER_FIELDS | set(DEPRECATED_FRONTMATTER_FIELDS)
     for _extra in resolve_known_frontmatter_fields(repo_root) - _excluded:
-        VALID_FIELDS.setdefault(_extra, {"type": "string"})
+        VALID_FIELDS.setdefault(_extra, {"type": "extension"})
 
     # Validate set operations
     for field, value in set_fields:
@@ -2664,7 +2660,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
             console.print(
                 f"[red]Unknown field: {field}. Valid fields: {', '.join(sorted(VALID_FIELDS.keys()))}[/]"
             )
-            return
+            raise SystemExit(1)
 
         field_spec = VALID_FIELDS[field]
 
@@ -2678,7 +2674,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
             console.print(
                 f"[red]Field '{field}' is a list field. Use --add or --remove instead of --set.[/]"
             )
-            return
+            raise SystemExit(1)
 
         # Validate based on field type
         if field_spec["type"] == "enum":
@@ -2693,7 +2689,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
             if value not in field_spec["values"]:  # type: ignore[operator]
                 valid = ", ".join(field_spec["values"])  # type: ignore[arg-type]
                 console.print(f"[red]Invalid {field}: {value}. Valid values: {valid}[/]")
-                return
+                raise SystemExit(1)
 
             # State-transition legality check (Gordon 2026-07-01).
             #
@@ -2793,7 +2789,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
                     console.print(
                         f"[red]Invalid {field} format. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM[/]"
                     )
-                    return
+                    raise SystemExit(1)
                 if isinstance(parsed, datetime):
                     value = parsed.isoformat()
                 else:
@@ -2807,7 +2803,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
                         f"[red]Invalid {field} format. Use YYYY-MM-DD or ISO datetime, "
                         "or 'none' to clear the field[/]"
                     )
-                    return
+                    raise SystemExit(1)
             else:
                 try:
                     created_dt = datetime.fromisoformat(value)
@@ -2817,7 +2813,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
                         f"[red]Invalid {field} date format. Use ISO format "
                         "(YYYY-MM-DD[THH:MM:SS+HH:MM]), or 'none' to clear the field[/]"
                     )
-                    return
+                    raise SystemExit(1)
         elif field_spec["type"] == "string":
             if field == "recur":
                 if not is_valid_recur_value(value):
@@ -2825,8 +2821,25 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
                         "[red]Invalid recur format. Use 7d, 24h, weekly, monthly, "
                         "or a cron expression like '0 9 * * 1'[/]"
                     )
-                    return
+                    raise SystemExit(1)
             # Arbitrary string value - no validation needed
+        elif field_spec["type"] == "extension":
+            # Workspace-registered extension fields (e.g. premise_check) may hold
+            # structured values. Auto-detect JSON objects/arrays so the caller can
+            # write `--set premise_check '{"checked_at": "…", "verdict": "verified"}'`
+            # and get a mapping, not a quoted string.
+            stripped = value.strip()
+            if stripped.startswith(("{", "[")):
+                import json
+
+                try:
+                    value = json.loads(stripped)
+                except json.JSONDecodeError as e:
+                    console.print(
+                        f"[red]Field '{field}': value looks like JSON but could not be parsed: {e}[/]"
+                    )
+                    raise SystemExit(1)
+            # Plain scalar extension values pass through unchanged.
 
         changes.append(("set", field, value))
 
@@ -2874,7 +2887,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
                 console.print(
                     f"[red]Cannot {op} to field: {field}. Use --{op} with deps/tags/requires/related/discovered-from.[/]"
                 )
-                return
+                raise SystemExit(1)
 
             # Warn about blocks → requires semantic change
             if field in ("block", "blocks"):
@@ -2889,7 +2902,7 @@ def edit(task_ids, set_fields, add_fields, remove_fields, set_subtask, force, al
 
     if not changes:
         console.print("[red]No changes specified. Use --set, --add, or --remove.[/]")
-        return
+        sys.exit(1)
 
     from gptodo.lifecycle import mutate_task, resolve_subtask_lines, TransitionError
 
@@ -3023,7 +3036,7 @@ def _resolve_agent_name(repo_root: Path, override: str | None) -> str:
                 try:
                     import tomli as tomllib  # type: ignore[import-not-found,no-redef]
                 except ModuleNotFoundError:
-                    console.print(
+                    Console(stderr=True).print(
                         "[yellow]Warning: tomli is required on Python <3.11 to read "
                         "gptme.toml; falling back to 'agent'[/]"
                     )
@@ -3031,7 +3044,7 @@ def _resolve_agent_name(repo_root: Path, override: str | None) -> str:
 
             data = tomllib.loads(gptme_toml.read_text())
         except (OSError, tomllib.TOMLDecodeError) as exc:
-            console.print(
+            Console(stderr=True).print(
                 f"[yellow]Warning: Failed to load {gptme_toml}: {exc}. Falling back to 'agent'.[/]"
             )
             return "agent"
@@ -5612,6 +5625,9 @@ def add(
     treated as no body; an incomplete body fails without creating a task.
     Use --body-stdin to wait until EOF for delayed or slow producers.
 
+    Prints the task ID to stdout and the creation confirmation to stderr,
+    so stdout can be captured directly for a subsequent edit or claim.
+
     Examples:
         # Simple task
         gptodo add "Fix the login bug"
@@ -5665,7 +5681,7 @@ def add(
             raise click.UsageError("Invalid --wait format. Use YYYY-MM-DD or YYYY-MM-DDTHH:MM")
         wait_iso = parsed_wait.isoformat()
 
-    console = Console()
+    console = Console(stderr=True)
     repo_root = find_repo_root(Path.cwd())
     tasks_dir = repo_root / "tasks"
     assigned_to = _resolve_agent_name(repo_root, assigned_to)
@@ -5746,6 +5762,7 @@ def add(
     filepath.write_text(content)
 
     console.print(f"[green]✓ Created task:[/] {filepath}")
+    print(filepath.stem)
 
 
 def _body_looks_like_frontmatter(body: str) -> bool:
